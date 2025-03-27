@@ -25,7 +25,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "cesium": ["libs/cesium/Source/Cesium"],
+      "cesium": ["libs/cesium/Source/Cesium"]
     },
     
     /* Declaration files */

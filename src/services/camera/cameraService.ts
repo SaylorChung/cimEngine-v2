@@ -2,7 +2,7 @@
  * CameraService实现
  * 负责管理Cesium相机及其相关操作
  */
-import * as Cesium from 'cesium'
+import Cesium from '../../cesium'
 import { IEventBus } from '../../core/types'
 import { IViewerService } from '../viewer/types'
 import { createState } from '../../core/state/createState'

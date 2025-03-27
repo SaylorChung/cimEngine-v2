@@ -2,7 +2,7 @@
  * SceneService实现
  * 负责管理Cesium场景和环境设置
  */
-import * as Cesium from 'cesium'
+import Cesium from '../../cesium'
 import { IEventBus } from '../../core/types'
 import { AtmosphereOptions, ISceneService, SceneOptions, SkyBoxOptions } from './types'
 

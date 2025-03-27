@@ -1,7 +1,7 @@
 /**
  * ViewerService类型定义
  */
-import * as Cesium from 'cesium'
+import Cesium from '../../cesium'
 import { Service } from '../../core/types'
 
 /**

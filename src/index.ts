@@ -6,6 +6,9 @@ import { Container } from './core/container'
 import { EventBus } from './core/eventBus'
 import { PluginManager } from './core/pluginManager'
 
+// 导入 Cesium 以确保它被打包
+import 'cesium';
+
 // 创建导出对象
 interface ArtisExports {
   engine: typeof Engine
@@ -13,14 +16,20 @@ interface ArtisExports {
   EventBus: typeof EventBus
   PluginManager: typeof PluginManager
   VERSION: string
+  Cesium: typeof Cesium // 添加 Cesium
 }
 
+// 导入 Cesium
+import Cesium from './cesium';
+
+// 将 Cesium 添加到导出对象
 const artis: ArtisExports = {
   engine: Engine,
   Container: Container,
   EventBus: EventBus,
   PluginManager: PluginManager,
-  VERSION: '2.0.0'
+  VERSION: '2.0.0',
+  Cesium: Cesium // 添加 Cesium
 }
 
 // 导出默认对象

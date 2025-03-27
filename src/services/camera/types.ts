@@ -1,4 +1,4 @@
-import * as Cesium from 'cesium'
+import Cesium from '../../cesium'
 
 /**
  * 相机位置信息

@@ -2,7 +2,7 @@
  * ViewerService实现
  * 负责创建和管理Cesium Viewer实例
  */
-import * as Cesium from 'cesium'
+import Cesium from '../../cesium'
 import { IEventBus } from '../../core/types'
 import { IViewerService, ViewerOptions } from './types'
 
