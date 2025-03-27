@@ -8,15 +8,15 @@ import { Engine, IPluginManager, Plugin } from './types'
  * 插件管理器
  */
 export class PluginManager implements IPluginManager {
-  private plugins: Map<string, Plugin> = new Map()
-  private engine: Engine
+  public plugins: Map<string, Plugin> = new Map()
+  private _engine: Engine
 
   /**
    * 构造函数
    * @param engine 引擎实例
    */
   constructor(engine: Engine) {
-    this.engine = engine
+    this._engine = engine
   }
 
   /**
@@ -25,14 +25,14 @@ export class PluginManager implements IPluginManager {
    * @param options 插件选项
    */
   use(plugin: Plugin, options?: any): void {
-    if (this.plugins.has(plugin.name)) {
-      console.warn(`Plugin "${plugin.name}" is already registered`)
+    if (this.has(plugin.name)) {
+      console.warn(`Plugin "${plugin.name}" is already installed`)
       return
     }
 
     // 安装插件
     try {
-      plugin.install(this.engine, options)
+      plugin.install(this._engine, options)
       this.plugins.set(plugin.name, plugin)
     } catch (error) {
       console.error(`Error installing plugin "${plugin.name}":`, error)
@@ -42,42 +42,42 @@ export class PluginManager implements IPluginManager {
 
   /**
    * 移除插件
-   * @param pluginName 插件名称
+   * @param name 插件名称
    */
-  remove(pluginName: string): void {
-    const plugin = this.plugins.get(pluginName)
+  remove(name: string): void {
+    const plugin = this.plugins.get(name)
     if (!plugin) {
-      console.warn(`Plugin "${pluginName}" not found`)
+      console.warn(`Plugin "${name}" not found`)
       return
     }
 
     // 卸载插件
     if (plugin.uninstall) {
       try {
-        plugin.uninstall(this.engine)
+        plugin.uninstall(this._engine)
       } catch (error) {
-        console.error(`Error uninstalling plugin "${pluginName}":`, error)
+        console.error(`Error uninstalling plugin "${name}":`, error)
       }
     }
 
-    this.plugins.delete(pluginName)
+    this.plugins.delete(name)
   }
 
   /**
    * 检查插件是否已注册
-   * @param pluginName 插件名称
+   * @param name 插件名称
    * @returns 是否已注册
    */
-  has(pluginName: string): boolean {
-    return this.plugins.has(pluginName)
+  has(name: string): boolean {
+    return this.plugins.has(name)
   }
 
   /**
    * 获取插件实例
-   * @param pluginName 插件名称
+   * @param name 插件名称
    * @returns 插件实例
    */
-  get(pluginName: string): Plugin | undefined {
-    return this.plugins.get(pluginName)
+  get(name: string): Plugin | undefined {
+    return this.plugins.get(name)
   }
 }

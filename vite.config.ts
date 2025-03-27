@@ -10,25 +10,17 @@ export default defineConfig({
       fileName: (format) => `artis.${format}.js`,
       formats: ['es', 'umd']
     },
-    rollupOptions: {
-      // 外部化处理不想打包进库的依赖
-      external: ['cesium'],
-      output: {
-        // 在 UMD 构建模式下为这些外部化的依赖提供一个全局变量
-        globals: {
-          cesium: 'Cesium'
-        }
-      }
-    },
     sourcemap: true,
-    // 确保外部化处理那些你不想打包进库的依赖
-    commonjsOptions: {
-      include: []
-    }
+    minify: 'terser', // 添加代码压缩
+    target: 'esnext' // 使用最新的 JS 特性
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      // Cesium 模块的别名路径
+      cesium: resolve(__dirname, 'libs/cesium/Source/Cesium.js'),
+      "@cesium/engine": resolve(__dirname, 'libs/cesium/packages/engine/index.js'),
+      "@cesium/widgets": resolve(__dirname, 'libs/cesium/packages/widgets/index.js'),
     }
   },
   plugins: [

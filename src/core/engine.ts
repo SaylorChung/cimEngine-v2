@@ -1,8 +1,7 @@
-import * as Cesium from 'cesium'
 import { Container } from './container'
 import { EventBus } from './eventBus'
 import { PluginManager } from './pluginManager'
-import { EngineOptions, IContainer, IEventBus, IPluginManager, Plugin, Service } from './types'
+import { EngineOptions, IContainer, IEventBus, IPluginManager, Plugin } from './types'
 
 // 引擎默认配置
 const DEFAULT_OPTIONS: EngineOptions = {
@@ -194,13 +193,13 @@ export class Engine {
    * 注册服务
    */
   private registerServices(): void {
-    // 这里将根据配置注册相关服务
-    // 实际实现时会动态注册ViewerService、SceneService等
-
-    // 简化示例，实际实现会更复杂
     const serviceConfigs = this._options.services || {}
 
-    // 记录服务注册过程
+    // 注册核心服务，使用正确的类型转换
+    this._container.registerInstance('container', this._container)
+    this._container.registerInstance('events', this._events)
+    this._container.registerInstance('plugins', this._plugins)
+
     this._events.emit('engine.services.register', {
       serviceCount: Object.keys(serviceConfigs).length,
     })
@@ -234,5 +233,40 @@ export class Engine {
     this._events.emit('engine.plugins.installed', {
       pluginCount: plugins.length,
     })
+  }
+
+  /**
+   * 释放引擎资源
+   */
+  public dispose(): void {
+    this.stop()
+
+    // 发布销毁开始事件
+    this._events.emit('engine.destroy.start')
+
+    // 卸载所有插件
+    const pluginNames = Array.from(this._plugins.plugins.keys())
+    for (const name of pluginNames) {
+      this._plugins.remove(name)
+    }
+
+    // 清理事件
+    this._events.clear()
+
+    // 销毁Viewer
+    if (this.viewer) {
+      this.viewer.destroy()
+      this.viewer = null
+    }
+
+    // 发布销毁完成事件
+    this._events.emit('engine.destroy.complete')
+
+    // 清除事件总线
+    // 注意：不要在此之前清除事件，以确保所有销毁事件都能被处理
+    this._events['handlers'].clear()
+    this._events['onceHandlers'].clear()
+
+    this._initialized = false
   }
 }

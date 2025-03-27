@@ -58,4 +58,8 @@ export interface IViewerService extends Service {
 
   // 性能设置
   setPerformanceMode(mode: 'high' | 'medium' | 'low'): void
+
+  // UI visibility control
+  setTimelineVisibility(visible: boolean): void
+  setAnimationVisibility(visible: boolean): void
 }

@@ -8,9 +8,9 @@ import { IContainer, Service, ServiceConstructor, ServiceIdentifier } from './ty
  * 负责管理服务的注册和解析
  */
 export class Container implements IContainer {
-  private services = new Map<ServiceIdentifier, any>()
-  private singletons = new Map<ServiceIdentifier, Service>()
-  private implementations = new Map<ServiceIdentifier, ServiceConstructor>()
+  private _services: Map<ServiceIdentifier<any>, ServiceConstructor<any>> = new Map()
+  private _instances: Map<ServiceIdentifier<any>, any> = new Map()
+  private _singletons: Set<ServiceIdentifier<any>> = new Set()
 
   /**
    * 注册服务
@@ -20,12 +20,9 @@ export class Container implements IContainer {
     implementation: ServiceConstructor<T>,
     singleton = true
   ): void {
-    this.implementations.set(id, implementation)
-    this.services.set(id, { implementation, singleton })
-
-    // 如果已经有实例，则删除它以便下次重新创建
-    if (this.singletons.has(id)) {
-      this.singletons.delete(id)
+    this._services.set(id, implementation)
+    if (singleton) {
+      this._singletons.add(id)
     }
   }
 
@@ -33,45 +30,48 @@ export class Container implements IContainer {
    * 注册实例
    */
   registerInstance<T extends Service>(id: ServiceIdentifier<T>, instance: T): void {
-    this.singletons.set(id, instance)
-    this.services.set(id, { singleton: true })
+    this._instances.set(id, instance)
   }
 
   /**
    * 解析服务
    */
   resolve<T extends Service>(id: ServiceIdentifier<T>): T {
-    // 已经有实例，直接返回
-    if (this.singletons.has(id)) {
-      return this.singletons.get(id) as T
+    // 先检查实例
+    const instance = this._instances.get(id)
+    if (instance) {
+      return instance
     }
 
-    const registration = this.services.get(id)
-    if (!registration) {
-      throw new Error(`Service "${id.toString()}" not registered`)
+    // 查找服务注册
+    const implementation = this._services.get(id)
+    if (!implementation) {
+      throw new Error(`Service "${id.toString()}" not found`)
     }
 
-    const { implementation, singleton } = registration
+    // 如果是单例模式，检查是否已有实例
+    if (this._singletons.has(id)) {
+      const existingInstance = this._instances.get(id)
+      if (existingInstance) {
+        return existingInstance
+      }
+    }
 
     // 创建新实例
-    if (!implementation) {
-      throw new Error(`Implementation for "${id.toString()}" not found`)
+    const newInstance = new implementation()
+    
+    // 如果是单例，保存实例
+    if (this._singletons.has(id)) {
+      this._instances.set(id, newInstance)
     }
 
-    const instance = new implementation()
-
-    // 如果是单例，存储实例
-    if (singleton) {
-      this.singletons.set(id, instance)
-    }
-
-    return instance as T
+    return newInstance
   }
 
   /**
    * 检查服务是否已注册
    */
   has<T extends Service>(id: ServiceIdentifier<T>): boolean {
-    return this.services.has(id)
+    return this._services.has(id) || this._instances.has(id)
   }
 }

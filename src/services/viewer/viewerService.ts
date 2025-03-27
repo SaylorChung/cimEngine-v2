@@ -157,7 +157,8 @@ export class ViewerService implements IViewerService {
    */
   public showTimeline(visible: boolean): void {
     if (this._viewer && this._viewer.timeline) {
-      this._viewer.timeline.container.style.visibility = visible ? 'visible' : 'hidden'
+      const container = this._viewer.timeline.container as HTMLElement
+      container.style.visibility = visible ? 'visible' : 'hidden'
       this._events.emit('viewer.ui.timeline', { visible })
     }
   }
@@ -168,9 +169,22 @@ export class ViewerService implements IViewerService {
    */
   public showAnimation(visible: boolean): void {
     if (this._viewer && this._viewer.animation) {
-      this._viewer.animation.container.style.visibility = visible ? 'visible' : 'hidden'
+      const container = this._viewer.animation.container as HTMLElement
+      container.style.visibility = visible ? 'visible' : 'hidden'
       this._events.emit('viewer.ui.animation', { visible })
     }
+  }
+
+  public setTimelineVisibility(visible: boolean): void {
+    if (!this._viewer) return
+    const container = this._viewer.timeline.container as HTMLElement
+    container.style.visibility = visible ? 'visible' : 'hidden'
+  }
+
+  public setAnimationVisibility(visible: boolean): void {
+    if (!this._viewer) return
+    const container = this._viewer.animation.container as HTMLElement
+    container.style.visibility = visible ? 'visible' : 'hidden'
   }
 
   /**

@@ -163,12 +163,14 @@ export class CameraService implements ICameraService {
 
     // 应用限制
     if (limits.minZoomDistance !== undefined) {
-      this.camera.constrainedAxis = Cesium.Cartesian3.UNIT_Z
-      this.camera.minimumZoomDistance = limits.minZoomDistance
+      // Cesium Camera 的这些属性实际存在但类型定义可能缺失，使用类型断言
+      const camera = this.camera as any
+      camera.minimumZoomDistance = limits.minZoomDistance
     }
 
     if (limits.maxZoomDistance !== undefined) {
-      this.camera.maximumZoomDistance = limits.maxZoomDistance
+      const camera = this.camera as any
+      camera.maximumZoomDistance = limits.maxZoomDistance
     }
 
     // 注册相机限制事件
@@ -177,6 +179,15 @@ export class CameraService implements ICameraService {
       this.camera.changed.removeEventListener(this._enforceLimits, this)
       // 添加新的监听器
       this.camera.changed.addEventListener(this._enforceLimits, this)
+    }
+  }
+
+  public setZoomLimits(limits: CameraLimits): void {
+    if (limits.minZoomDistance !== undefined) {
+      (this.camera as any).minimumZoomDistance = limits.minZoomDistance
+    }
+    if (limits.maxZoomDistance !== undefined) {
+      (this.camera as any).maximumZoomDistance = limits.maxZoomDistance
     }
   }
 
@@ -537,14 +548,20 @@ export class CameraService implements ICameraService {
    * 注册相机移动结束事件
    */
   public onMoveEnd(callback: (position: CameraPosition) => void): () => void {
-    return this._events.on('camera.moveEnd', callback)
+    const unsubscribe = this._events.on('camera.moveEnd', callback)
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
   }
 
   /**
    * 注册相机移动开始事件
    */
   public onMoveStart(callback: (position: CameraPosition) => void): () => void {
-    return this._events.on('camera.moveStart', callback)
+    const unsubscribe = this._events.on('camera.moveStart', callback)
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
   }
 
   /**
@@ -552,6 +569,13 @@ export class CameraService implements ICameraService {
    */
   public onViewChanged(callback: (position: CameraPosition) => void): () => void {
     return this._events.on('camera.changed', callback)
+  }
+
+  public onCameraChanged(callback: (position: CameraPosition) => void): () => void {
+    const unsubscribe = this._events.on('camera.changed', callback)
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
   }
 
   /**

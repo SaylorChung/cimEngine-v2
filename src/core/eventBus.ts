@@ -8,19 +8,22 @@ import { EventHandler, IEventBus } from './types'
  * 事件总线
  */
 export class EventBus implements IEventBus {
-  private handlers: Map<string, Set<EventHandler>> = new Map()
-  private onceHandlers: Map<string, Set<EventHandler>> = new Map()
+  public handlers: Map<string, Set<EventHandler>> = new Map()
+  public onceHandlers: Map<string, Set<EventHandler>> = new Map()
 
   /**
    * 订阅事件
    * @param eventName 事件名称
    * @param handler 事件处理函数
    */
-  on<T = any>(eventName: string, handler: EventHandler<T>): void {
+  on<T = any>(eventName: string, handler: EventHandler<T>): () => void {
     if (!this.handlers.has(eventName)) {
       this.handlers.set(eventName, new Set())
     }
-    this.handlers.get(eventName)!.add(handler)
+    const handlers = this.handlers.get(eventName)!
+    handlers.add(handler)
+    
+    return () => this.off(eventName, handler)
   }
 
   /**
@@ -36,13 +39,14 @@ export class EventBus implements IEventBus {
       return
     }
 
-    // 移除特定处理器
-    if (this.handlers.has(eventName)) {
-      this.handlers.get(eventName)!.delete(handler)
+    const handlers = this.handlers.get(eventName)
+    if (handlers) {
+      handlers.delete(handler)
     }
 
-    if (this.onceHandlers.has(eventName)) {
-      this.onceHandlers.get(eventName)!.delete(handler)
+    const onceHandlers = this.onceHandlers.get(eventName)
+    if (onceHandlers) {
+      onceHandlers.delete(handler)
     }
   }
 
@@ -55,7 +59,8 @@ export class EventBus implements IEventBus {
     if (!this.onceHandlers.has(eventName)) {
       this.onceHandlers.set(eventName, new Set())
     }
-    this.onceHandlers.get(eventName)!.add(handler)
+    const handlers = this.onceHandlers.get(eventName)!
+    handlers.add(handler)
   }
 
   /**
@@ -64,29 +69,35 @@ export class EventBus implements IEventBus {
    * @param data 事件数据
    */
   emit<T = any>(eventName: string, data?: T): void {
-    // 处理常规处理器
-    if (this.handlers.has(eventName)) {
-      for (const handler of this.handlers.get(eventName)!) {
+    const handlers = this.handlers.get(eventName)
+    if (handlers) {
+      handlers.forEach(handler => {
         try {
           handler(data)
         } catch (error) {
-          console.error(`Error in event handler for "${eventName}":`, error)
+          console.error(`Error in event handler for ${eventName}:`, error)
         }
-      }
+      })
     }
 
-    // 处理一次性处理器
-    if (this.onceHandlers.has(eventName)) {
-      const handlers = Array.from(this.onceHandlers.get(eventName)!)
+    const onceHandlers = this.onceHandlers.get(eventName)
+    if (onceHandlers) {
+      onceHandlers.forEach(handler => {
+        try {
+          handler(data)
+        } catch (error) {
+          console.error(`Error in once event handler for ${eventName}:`, error)
+        }
+      })
       this.onceHandlers.delete(eventName)
-
-      for (const handler of handlers) {
-        try {
-          handler(data)
-        } catch (error) {
-          console.error(`Error in once event handler for "${eventName}":`, error)
-        }
-      }
     }
+  }
+
+  /**
+   * 清除所有事件处理器
+   */
+  clear(): void {
+    this.handlers.clear()
+    this.onceHandlers.clear()
   }
 }

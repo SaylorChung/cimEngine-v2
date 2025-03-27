@@ -189,7 +189,7 @@ export class SceneService implements ISceneService {
       throw new Error('Scene is not available')
     }
 
-    const atmosphere = this._scene.skyAtmosphere
+    const atmosphere = this._scene.skyAtmosphere as any
 
     if (options.show !== undefined) {
       atmosphere.show = options.show
@@ -197,18 +197,25 @@ export class SceneService implements ISceneService {
 
     if (options.density !== undefined) {
       // 调整大气密度相关参数
-      // 注意：Cesium的SkyAtmosphere没有直接的密度参数，这里做近似调整
-      atmosphere.hueShift = options.density * 0.1
-      atmosphere.saturationShift = options.density * 0.2
-      atmosphere.brightnessShift = options.density * 0.1
+      atmosphere.atmosphereDensity = options.density
     }
 
     if (options.ellipsoidScale !== undefined) {
-      // 这个参数改变大气层厚度
-      atmosphere.atmosphereHueShift = options.ellipsoidScale
+      atmosphere.atmosphereEllipsoidScale = options.ellipsoidScale
     }
 
     this._events.emit('scene.atmosphere.changed', { options })
+  }
+
+  setAtmosphereOptions(options: AtmosphereOptions): void {
+    const atmosphere = this.scene.skyAtmosphere
+    if (!atmosphere) return
+
+    if (options.ellipsoidScale !== undefined) {
+      // 使用类型断言来处理 atmosphereHueShift 属性
+      const skyAtmosphere = atmosphere as any
+      skyAtmosphere.atmosphereHueShift = options.ellipsoidScale
+    }
   }
 
   /**

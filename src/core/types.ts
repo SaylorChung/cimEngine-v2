@@ -27,6 +27,13 @@ export class Engine {
   container: IContainer
   events: IEventBus
   plugins: IPluginManager
+  
+  constructor() {
+    // 这些属性将在init方法中被初始化
+    this.container = {} as IContainer
+    this.events = {} as IEventBus
+    this.plugins = {} as IPluginManager
+  }
 }
 
 // 服务接口
@@ -45,15 +52,18 @@ export type ServiceIdentifier<T extends Service = Service> = string | symbol | S
 export type EventHandler<T = any> = (data: T) => void
 
 // 事件总线接口
-export interface IEventBus {
-  on<T = any>(eventName: string, handler: EventHandler<T>): void
-  off<T = any>(eventName: string, handler?: EventHandler<T>): void
+export interface IEventBus extends Service {
+  on<T = any>(eventName: string, handler: EventHandler<T>): () => void
   once<T = any>(eventName: string, handler: EventHandler<T>): void
   emit<T = any>(eventName: string, data?: T): void
+  off<T = any>(eventName: string, handler?: EventHandler<T>): void
+  clear(): void
+  handlers: Map<string, Set<EventHandler>>
+  onceHandlers: Map<string, Set<EventHandler>>
 }
 
 // 依赖注入容器接口
-export interface IContainer {
+export interface IContainer extends Service {
   register<T extends Service>(
     id: ServiceIdentifier<T>,
     implementation: ServiceConstructor<T>,
@@ -65,9 +75,10 @@ export interface IContainer {
 }
 
 // 插件管理器接口
-export interface IPluginManager {
+export interface IPluginManager extends Service {
   use(plugin: Plugin, options?: any): void
-  remove(pluginName: string): void
-  has(pluginName: string): boolean
-  get(pluginName: string): Plugin | undefined
+  remove(name: string): void
+  has(name: string): boolean
+  get(name: string): Plugin | undefined
+  plugins: Map<string, Plugin>
 }

@@ -12,6 +12,19 @@ export interface CameraPosition {
 }
 
 /**
+ * 相机事件回调
+ */
+export type CameraEventCallback = (position: CameraPosition) => void
+
+/**
+ * 相机缩放限制
+ */
+export interface CameraZoomLimits {
+  minZoomDistance?: number
+  maxZoomDistance?: number
+}
+
+/**
  * 相机视图选项
  */
 export interface CameraViewOptions {
@@ -39,9 +52,7 @@ export interface CameraFlyToOptions extends CameraViewOptions {
 /**
  * 相机限制选项
  */
-export interface CameraLimits {
-  minZoomDistance?: number
-  maxZoomDistance?: number
+export interface CameraLimits extends CameraZoomLimits {
   minPitch?: number
   maxPitch?: number
   bounds?: Cesium.Rectangle
