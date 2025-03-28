@@ -4,7 +4,7 @@ import {
   destroyObject,
   DeveloperError,
   FrameRateMonitor,
-} from "@cesium/engine";
+} from "../../../engine/index.js";
 import knockout from "../ThirdParty/knockout.js";
 import createCommand from "../createCommand.js";
 

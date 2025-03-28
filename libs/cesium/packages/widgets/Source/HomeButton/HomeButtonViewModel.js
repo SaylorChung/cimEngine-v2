@@ -1,4 +1,4 @@
-import { defined, DeveloperError } from "@cesium/engine";
+import { defined, DeveloperError } from "../../../engine/index.js";
 import knockout from "../ThirdParty/knockout.js";
 import createCommand from "../createCommand.js";
 

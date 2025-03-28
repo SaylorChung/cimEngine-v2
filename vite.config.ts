@@ -33,9 +33,7 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
       // Cesium 模块的别名路径
-      'cesium': resolve(__dirname, 'libs/cesium/Source/Cesium.js'),
-      '@cesium/engine': resolve(__dirname, 'libs/cesium/packages/engine/index.js'),
-      '@cesium/widgets': resolve(__dirname, 'libs/cesium/packages/widgets/index.js'),
+      'cesium': resolve(__dirname, 'libs/cesium/Source/Cesium.js')
     }
   },
   plugins: [

@@ -27,6 +27,7 @@
       "@/*": ["src/*"],
       "cesium": ["libs/cesium/Source/Cesium"]
     },
+    "typeRoots": ["node_modules/@types"],
     
     /* Declaration files */
     "declaration": true,

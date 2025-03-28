@@ -54,17 +54,11 @@
   },
   "type": "module",
   "scripts": {
+    "build": "gulp build --workspace @cesium/engine",
+    "build-ts": "gulp buildTs --workspace @cesium/engine",
     "coverage": "gulp coverage --workspace @cesium/engine",
-    "test": "gulp test --production",
-    "postversion": "gulp postversion --workspace @cesium/engine",
-    "start": "node server.js --production",
-    "start-public": "node server.js --public --production",
-    "test-all": "gulp test --all --production",
-    "test-webgl": "gulp test --include WebGL --production",
-    "test-non-webgl": "gulp test --exclude WebGL --production",
-    "test-webgl-validation": "gulp test --webglValidation --production",
-    "test-webgl-stub": "gulp test --webglStub --production",
-    "test-release": "gulp test --release --production"
+    "test": "gulp test --workspace @cesium/engine",
+    "postversion": "gulp postversion --workspace @cesium/engine"
   },
   "repository": {
     "type": "git",

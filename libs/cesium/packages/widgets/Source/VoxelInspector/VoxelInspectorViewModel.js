@@ -8,7 +8,7 @@ import {
   Matrix4,
   CustomShader,
   VoxelShapeType,
-} from "@cesium/engine";
+} from "../../../engine/index.js";
 import knockout from "../ThirdParty/knockout.js";
 
 function formatShaderString(str) {

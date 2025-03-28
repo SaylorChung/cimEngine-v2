@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/artis.umd.js",
   "module": "./dist/artis.es.js",
-  "types": "./dist/artis.d.ts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],

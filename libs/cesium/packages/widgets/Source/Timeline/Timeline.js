@@ -5,7 +5,7 @@ import {
   DeveloperError,
   getElement,
   JulianDate,
-} from "@cesium/engine";
+} from "../../../engine/index.js";
 import TimelineHighlightRange from "./TimelineHighlightRange.js";
 import TimelineTrack from "./TimelineTrack.js";
 

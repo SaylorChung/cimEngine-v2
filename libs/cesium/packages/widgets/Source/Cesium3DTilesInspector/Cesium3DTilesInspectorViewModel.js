@@ -12,7 +12,7 @@ import {
   ResourceCache,
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
-} from "@cesium/engine";
+} from "../../../engine/index.js";
 import knockout from "../ThirdParty/knockout.js";
 
 function getPickTileset(viewModel) {
