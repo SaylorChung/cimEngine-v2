@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "noEmit": true,
+  },
+  "include": ["src/examples/**/*.ts", "src/examples/**/*.d.ts", "src/examples/**/*.vue","dist/**/*.d.ts"],
+  "references": [
+    { "path": "./tsconfig.json" }
+  ]
+}
