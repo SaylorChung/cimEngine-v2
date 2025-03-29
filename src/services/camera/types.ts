@@ -1,4 +1,4 @@
-import Cesium from '../../cesium'
+import Cesium from '../../cesiumLoader'
 
 /**
  * 相机位置信息

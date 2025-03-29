@@ -6,8 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 源目录和目标目录 - 使用 Build/CesiumUnminified 路径
-// 只复制必要的资源文件，不复制 Cesium.js
+// 源目录和目标目录
 const sourceDirs = [
   path.resolve(__dirname, '../libs/cesium/Build/CesiumUnminified/Assets'),
   path.resolve(__dirname, '../libs/cesium/Build/CesiumUnminified/Workers'),
@@ -15,7 +14,15 @@ const sourceDirs = [
   path.resolve(__dirname, '../libs/cesium/Build/CesiumUnminified/Widgets')
 ];
 
-const targetBaseDir = path.resolve(__dirname, '../dist/assets/cesium');
+// 添加 Cesium.d.ts 源文件路径
+const cesiumFiles = [
+  {
+    src: path.resolve(__dirname, '../libs/cesium/Source/Cesium.d.ts'),
+    dest: 'Cesium.d.ts'
+  }
+];
+
+const targetBaseDir = path.resolve(__dirname, '../dist');
 
 // 确保目标目录存在
 fs.ensureDirSync(targetBaseDir);
@@ -30,6 +37,16 @@ sourceDirs.forEach(sourceDir => {
     console.log(`已复制 ${sourceDir} 到 ${targetDir}`);
   } else {
     console.warn(`源目录不存在: ${sourceDir}`);
+  }
+});
+
+// 复制 Cesium 主文件
+cesiumFiles.forEach(file => {
+  if (fs.existsSync(file.src)) {
+    fs.copySync(file.src, path.join(targetBaseDir, file.dest), { overwrite: true });
+    console.log(`已复制 ${file.dest} 到 ${targetBaseDir}`);
+  } else {
+    console.warn(`文件不存在: ${file.src}`);
   }
 });
 

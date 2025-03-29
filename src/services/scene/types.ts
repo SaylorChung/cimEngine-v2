@@ -1,7 +1,7 @@
 /**
  * SceneService类型定义
  */
-import Cesium from '../../cesium'
+import Cesium from '../../cesiumLoader'
 import { Service } from '../../core/types'
 
 /**

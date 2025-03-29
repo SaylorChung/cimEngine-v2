@@ -5,7 +5,7 @@ import { Engine } from './core/engine'
 import { Container } from './core/container'
 import { EventBus } from './core/eventBus'
 import { PluginManager } from './core/pluginManager'
-import * as CesiumModule from './cesium' // 导入Cesium模块
+import * as CesiumModule from './cesiumLoader' // 导入Cesium模块
 
 // 创建导出对象接口
 interface IArtis {
@@ -34,4 +34,4 @@ export default artis
 // 导出类型定义
 export * from './core/types'
 // 导出Cesium类型
-export * from './cesium'
+export * from './cesiumLoader'

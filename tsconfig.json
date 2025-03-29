@@ -50,10 +50,11 @@
     
     // 路径映射，简化导入路径
     "paths": {
-      // @/xxx 映射到 src/xxx
       "@/*": ["src/*"],
-      // cesium 映射到本地库路径
-      "cesium": ["libs/cesium/Source/Cesium"]
+      "cesium": [
+        "libs/cesium/Source/Cesium.js",
+        "libs/cesium/Source/Cesium.d.ts"
+      ]
     },
     
     /* Declaration files - 声明文件生成 */

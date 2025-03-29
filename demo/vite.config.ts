@@ -8,8 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      // 使用相对路径引入我们打包好的引擎库
-      'artis': resolve(__dirname, '../dist/artis.es.js')
+      // 使用相对路径引入我们打包好的引擎库和 Cesium
+      'artis': resolve(__dirname, '../dist/artis.es.js'),
+      'cesium': resolve(__dirname, '../dist/assets/cesium/Cesium.js')
     }
   }
 })

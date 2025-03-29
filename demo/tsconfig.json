@@ -1,25 +1,19 @@
 {
-  "files": [],
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "artis": ["../dist/artis.es.js"],
+      "cesium": ["../dist/Cesium.js", "../dist/Cesium.d.ts"]
+    },
+    "types": ["vite/client"],
+    "skipLibCheck": true
+  },
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" },
     {
-      "extends": "@vue/tsconfig/tsconfig.dom.json",
-      "compilerOptions": {
-        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-        "baseUrl": ".",
-        "paths": {
-          "artis": ["../dist/artis.es.js"],
-          "@/*": ["./src/*"]
-        },
-        /* Linting */
-        "strict": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noFallthroughCasesInSwitch": true,
-        "noUncheckedSideEffectImports": true
-      },
-      "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+      "path": "./tsconfig.node.json"
     }
   ]
 }
