@@ -51,3 +51,14 @@ cesiumFiles.forEach(file => {
 });
 
 console.log('Cesium资源文件复制完成');
+
+const cesiumLoaderPath = path.join('dist', 'cesiumLoader.d.ts');
+// 读取并替换内容
+if (fs.existsSync(cesiumLoaderPath)) {
+  let content = fs.readFileSync(cesiumLoaderPath, 'utf8');
+  content = content.replace(
+    /['"]\.\.\/libs\/cesium\/Source\/Cesium['"]|['"]\.\.\/libs\/cesium\/Source\/Cesium\.js['"]/g,
+    "'cesium'"
+  );
+  fs.writeFileSync(cesiumLoaderPath, content, 'utf8');
+}

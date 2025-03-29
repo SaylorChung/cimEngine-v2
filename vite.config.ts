@@ -40,19 +40,8 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
       include: ['src/**/*'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+      exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts','src/demo/**/*.ts'],
       copyDtsFiles: false,
-      beforeWriteFile: (filePath, content) => {
-        // 替换所有对 ../libs/cesium 的引用为 cesium
-        const modified = content.replace(
-          /['"]\.\.\/libs\/cesium\/Source\/Cesium['"]|['"]\.\.\/libs\/cesium\/Source\/Cesium\.js['"]/g,
-          "'cesium'"
-        );
-        return {
-          filePath,
-          content: modified
-        };
-      }
     })
   ]
 });
