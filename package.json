@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && node scripts/copy-cesium-assets.js",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest run --coverage"
@@ -32,12 +32,12 @@
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.5",
+    "fs-extra": "^11.3.0",
     "prettier": "^3.2.5",
+    "terser": "^5.0.0",
     "typescript": "^5.0.0",
     "vite": "^6.0.0",
     "vite-plugin-dts": "^4.0.0",
-    "vitest": "^3.0.0",
-    "terser": "^5.0.0"
-  },
-  "dependencies": {}
+    "vitest": "^3.0.0"
+  }
 }
