@@ -13,7 +13,6 @@ interface IArtis {
   EventBus: typeof EventBus
   PluginManager: typeof PluginManager
   VERSION: string
-  // 不包含 Cesium
 }
 
 // 创建导出对象
@@ -23,14 +22,10 @@ const artis: IArtis = {
   EventBus: EventBus,
   PluginManager: PluginManager,
   VERSION: '2.0.0'
-  // 不包含 Cesium
 }
 
 // 导出默认对象
 export default artis
-
-// 单独导出 Cesium
-export { default as Cesium } from './cesium';
 
 // 导出类型定义
 export * from './core/types'
