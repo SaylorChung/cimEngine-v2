@@ -5,9 +5,9 @@
  */
 export function createState<T extends object>(initialState: T) {
   // 当前状态
-  let state = { ...initialState };
+  let state = { ...initialState }
   // 订阅者集合
-  const subscribers = new Set<(state: T) => void>();
+  const subscribers = new Set<(state: T) => void>()
 
   return {
     /**
@@ -15,7 +15,7 @@ export function createState<T extends object>(initialState: T) {
      * @returns 当前状态的副本
      */
     get: (): T => {
-      return { ...state };
+      return { ...state }
     },
 
     /**
@@ -23,9 +23,9 @@ export function createState<T extends object>(initialState: T) {
      * @param newState 新状态或部分状态
      */
     update: (newState: Partial<T>): void => {
-      state = { ...state, ...newState };
+      state = { ...state, ...newState }
       // 通知所有订阅者
-      subscribers.forEach(subscriber => subscriber({ ...state }));
+      subscribers.forEach(subscriber => subscriber({ ...state }))
     },
 
     /**
@@ -33,12 +33,12 @@ export function createState<T extends object>(initialState: T) {
      * @param subscriber 订阅函数
      * @returns 取消订阅的函数
      */
-    subscribe: (subscriber: (state: T) => void): () => void => {
-      subscribers.add(subscriber);
+    subscribe: (subscriber: (state: T) => void): (() => void) => {
+      subscribers.add(subscriber)
       // 返回取消订阅的函数
       return () => {
-        subscribers.delete(subscriber);
-      };
-    }
-  };
+        subscribers.delete(subscriber)
+      }
+    },
+  }
 }

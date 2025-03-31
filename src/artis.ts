@@ -25,7 +25,7 @@ const artis: IArtis = {
   EventBus: EventBus,
   PluginManager: PluginManager,
   VERSION: '2.0.0',
-  Cesium: CesiumModule // 添加Cesium模块到导出对象
+  Cesium: CesiumModule, // 添加Cesium模块到导出对象
 }
 
 // 导出默认对象

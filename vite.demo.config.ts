@@ -27,7 +27,6 @@ export default defineConfig({
   ],
   optimizeDeps: {
     include: ['vue'],
-    // 确保 Cesium 和 Knockout 被正确优化
     esbuildOptions: {
       target: 'es2020'
     }

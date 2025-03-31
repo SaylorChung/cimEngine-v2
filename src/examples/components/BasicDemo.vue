@@ -9,29 +9,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import artis from 'artis';
+import { ref, onMounted } from 'vue'
+import artis from 'artis'
 
 // 使用 typeof 来从值获取类型
-type CimEngineType = typeof artis.CimEngine;
-let engine: InstanceType<CimEngineType> | null = null;
+type CimEngineType = typeof artis.CimEngine
+let engine: InstanceType<CimEngineType> | null = null
 
 // 正确地定义 ref
-const cesiumContainer = ref<HTMLElement | null>(null);
+const cesiumContainer = ref<HTMLElement | null>(null)
 
 onMounted(() => {
-  if (!cesiumContainer.value) return;
-  
+  if (!cesiumContainer.value) return
+
   engine = new artis.CimEngine({
     container: cesiumContainer.value,
     options: {
       performance: 'high',
       debug: true,
-      autoStart: true
-    }
-  });
- 
-});
+      autoStart: true,
+    },
+  })
+})
 </script>
 
 <style scoped>

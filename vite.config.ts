@@ -10,6 +10,7 @@ export default defineConfig({
       fileName: (format) => `artis.${format}.js`,
       formats: ['es', 'umd']
     },
+    emptyOutDir: true, 
     sourcemap: true,
     minify: 'terser',
     target: 'esnext',

@@ -27,7 +27,7 @@ export class Engine {
   container: IContainer
   events: IEventBus
   plugins: IPluginManager
-  
+
   constructor() {
     // 这些属性将在init方法中被初始化
     this.container = {} as IContainer

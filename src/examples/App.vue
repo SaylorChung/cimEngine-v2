@@ -3,8 +3,8 @@
     <header>
       <h1>Artis Engine Examples</h1>
       <nav>
-        <button 
-          v-for="demo in demos" 
+        <button
+          v-for="demo in demos"
           :key="demo.name"
           :class="{ active: currentDemo === demo.component }"
           @click="currentDemo = demo.component"
@@ -13,7 +13,7 @@
         </button>
       </nav>
     </header>
-    
+
     <main>
       <component :is="currentDemo" />
     </main>
@@ -21,17 +21,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw } from 'vue';
-import BasicDemo from './components/BasicDemo.vue';
+import { ref, markRaw } from 'vue'
+import BasicDemo from './components/BasicDemo.vue'
 
 // 示例组件列表，使用 markRaw 标记组件避免不必要的响应式转换
 const demos = [
   { name: '基础示例', component: markRaw(BasicDemo) },
   // 可以在这里添加更多示例组件
-];
+]
 
 // 当前显示的示例组件
-const currentDemo = ref(demos[0].component);
+const currentDemo = ref(demos[0].component)
 </script>
 
 <style scoped>
@@ -69,7 +69,7 @@ button {
 }
 
 button.active {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 main {

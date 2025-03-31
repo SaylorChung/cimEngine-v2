@@ -22,7 +22,7 @@ export class EventBus implements IEventBus {
     }
     const handlers = this.handlers.get(eventName)!
     handlers.add(handler)
-    
+
     return () => this.off(eventName, handler)
   }
 

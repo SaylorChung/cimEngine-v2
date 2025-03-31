@@ -59,7 +59,7 @@ export class Container implements IContainer {
 
     // 创建新实例
     const newInstance = new implementation()
-    
+
     // 如果是单例，保存实例
     if (this._singletons.has(id)) {
       this._instances.set(id, newInstance)

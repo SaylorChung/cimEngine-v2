@@ -184,10 +184,10 @@ export class CameraService implements ICameraService {
 
   public setZoomLimits(limits: CameraLimits): void {
     if (limits.minZoomDistance !== undefined) {
-      (this.camera as any).minimumZoomDistance = limits.minZoomDistance
+      ;(this.camera as any).minimumZoomDistance = limits.minZoomDistance
     }
     if (limits.maxZoomDistance !== undefined) {
-      (this.camera as any).maximumZoomDistance = limits.maxZoomDistance
+      ;(this.camera as any).maximumZoomDistance = limits.maxZoomDistance
     }
   }
 
