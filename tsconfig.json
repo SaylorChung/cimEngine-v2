@@ -54,7 +54,8 @@
       "cesium": [
         "libs/cesium/Source/Cesium.js",
         "libs/cesium/Source/Cesium.d.ts"
-      ]
+      ],
+      "artis":["dist/artis.d.ts"]
     },
     
     /* Declaration files - 声明文件生成 */

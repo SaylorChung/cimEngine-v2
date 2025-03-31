@@ -3,9 +3,6 @@ import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  define: {
-    'eval': undefined
-  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/artis.ts'),

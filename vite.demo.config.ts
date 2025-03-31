@@ -4,10 +4,6 @@ import vue from '@vitejs/plugin-vue';
 
 // 导出 Vite 配置
 export default defineConfig({
-  // 移除 eval 的限制，因为 Cesium/Knockout.js 需要使用它
-  // define: {
-  //   'eval': undefined
-  // },
   root: resolve(__dirname, 'src/examples'),
   publicDir: resolve(__dirname, 'public'),
   server: {
@@ -16,7 +12,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+       // 同时指向 JS 文件和类型声明文件
+       'artis': resolve(__dirname, 'dist/artis.es.js')
     }
   },
   plugins: [
