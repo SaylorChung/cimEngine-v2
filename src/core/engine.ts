@@ -1,84 +1,83 @@
 import { Container } from './container'
+import { EngineOptions } from './types'
 import { EventBus } from './eventBus'
-import { PluginManager } from './pluginManager'
-import { EngineOptions, IContainer, IEventBus, IPluginManager, Plugin } from './types'
+import { ApiManager } from './apiManager'
+import { ServiceRegistry } from './serviceRegistry' // 添加导入
 
-// 引擎默认配置
-const DEFAULT_OPTIONS: EngineOptions = {
-  container: 'cesiumContainer',
-  options: {
-    performance: 'high',
-    debug: false,
-    autoStart: true,
-  },
-  plugins: [],
-  services: {},
-}
+// 导入所有服务接口
+import { ICameraService } from '../services/camera/types'
+import { IViewerService } from '../services/viewer/types'
+import { ISceneService } from '../services/scene/types'
+import { ILayerService } from '../services/layer/types'
+import { ITerrainService } from '../services/terrain/types'
+import { IWidgetService } from '../services/widget/types'
+import { IToolService } from '../services/tool/types'
+import { IDataService } from '../services/data/types'
+
+// 导入服务实现
+import { ViewerService } from '../services/viewer/viewerService'
+import { SceneService } from '../services/scene/sceneService'
+import { CameraService } from '../services/camera/cameraService'
+import { LayerService } from '../services/layer/layerService'
+import { TerrainService } from '../services/terrain/terrainService'
+import { WidgetService } from '../services/widget/widgetService'
+import { ToolService } from '../services/tool/toolService'
+import { DataService } from '../services/data/dataService'
 
 /**
- * Artis核心引擎类
+ * 引擎核心类
  */
 export class Engine {
-  // 静态版本信息
-  public static readonly VERSION: string = '2.0.0'
-
-  // 核心系统
-  private _container: IContainer
-  private _events: IEventBus
-  private _plugins: IPluginManager
-
-  // 引擎状态
-  private _initialized: boolean = false
-  private _running: boolean = false
-  private _options: EngineOptions
-
-  // 获取引擎状态
-  public get initialized(): boolean {
-    return this._initialized
-  }
-  public get running(): boolean {
-    return this._running
-  }
-
-  // 获取核心系统
-  public get container(): IContainer {
-    return this._container
-  }
-  public get events(): IEventBus {
-    return this._events
-  }
-  public get plugins(): IPluginManager {
-    return this._plugins
-  }
-
-  // 服务访问快捷方式（后续会添加）
-  public viewer: any
-  public scene: any
-  public camera: any
-  public layer: any
+  /**
+   * 依赖注入容器
+   */
+  public readonly container: Container
 
   /**
-   * 构造函数
+   * 事件总线
    */
-  constructor(options: EngineOptions) {
-    // 合并配置
-    this._options = { ...DEFAULT_OPTIONS, ...options }
+  public readonly events: EventBus
 
-    // 初始化核心系统
-    this._container = new Container()
-    this._events = new EventBus()
-    this._plugins = new PluginManager(this)
+  /**
+   * API管理器
+   */
+  public readonly api: ApiManager
 
-    // 注册核心组件到容器
-    this._container.registerInstance('engine', this)
-    this._container.registerInstance('container', this._container)
-    this._container.registerInstance('events', this._events)
-    this._container.registerInstance('plugins', this._plugins)
+  /**
+   * 服务注册表
+   */
+  private _registry: ServiceRegistry // 添加属性声明
 
-    // 如果配置了自动启动，则初始化引擎
-    if (this._options.options?.autoStart) {
-      this.init()
-    }
+  /**
+   * 是否已初始化
+   */
+  private _initialized: boolean = false
+
+  /**
+   * 创建引擎实例
+   * @param options 引擎选项
+   */
+  constructor(options: Partial<EngineOptions> = {}) {
+    // 创建容器
+    this.container = new Container()
+
+    // 创建事件总线
+    this.events = new EventBus()
+
+    // 注册核心服务
+    this.container.registerInstance('events', this.events)
+
+    // 创建服务注册表
+    this._registry = new ServiceRegistry(this.container, this.events) // 初始化属性
+
+    // 注册默认服务
+    this._registerDefaultServices()
+
+    // 创建API管理器
+    this.api = new ApiManager(this)
+
+    // 应用用户选项
+    this._applyOptions(options as EngineOptions)
   }
 
   /**
@@ -86,187 +85,259 @@ export class Engine {
    */
   public async init(): Promise<void> {
     if (this._initialized) {
-      console.warn('Engine is already initialized')
+      console.warn('Engine already initialized')
       return
     }
 
     try {
-      // 发布初始化开始事件
-      this._events.emit('engine.init.start')
-
-      // 注册服务
-      this.registerServices()
-
-      // 创建和配置Cesium Viewer
-      await this.initViewer()
-
-      // 安装插件
-      this.installPlugins()
-
-      // 标记为已初始化
+      // 初始化所有服务
+      await this._registry.initServices()
+      // 初始化API
+      this.api.init()
       this._initialized = true
-
-      // 发布初始化完成事件
-      this._events.emit('engine.init.complete')
-
-      // 启动引擎
-      if (this._options.options?.autoStart) {
-        this.start()
-      }
+      this.events.emit('engine.initialized')
     } catch (error) {
-      this._events.emit('engine.init.error', error)
-      console.error('Engine initialization failed:', error)
+      this.events.emit('engine.error', { error })
       throw error
     }
   }
 
   /**
-   * 启动引擎
-   */
-  public start(): void {
-    if (!this._initialized) {
-      throw new Error('Engine must be initialized before starting')
-    }
-
-    if (this._running) {
-      console.warn('Engine is already running')
-      return
-    }
-
-    this._running = true
-    this._events.emit('engine.start')
-  }
-
-  /**
-   * 停止引擎
-   */
-  public stop(): void {
-    if (!this._running) {
-      return
-    }
-
-    this._running = false
-    this._events.emit('engine.stop')
-  }
-
-  /**
    * 销毁引擎
    */
-  public destroy(): void {
-    this.stop()
-
-    // 发布销毁开始事件
-    this._events.emit('engine.destroy.start')
-
-    // 卸载所有插件
-    const pluginNames = Array.from(this._plugins['plugins'].keys())
-    for (const name of pluginNames) {
-      this._plugins.remove(name)
+  public async dispose(): Promise<void> {
+    if (!this._initialized) {
+      return
     }
 
-    // 销毁Viewer
-    if (this.viewer) {
-      this.viewer.destroy()
-      this.viewer = null
+    try {
+      // 销毁所有服务
+      await this._registry.disposeServices()
+      this._initialized = false
+      this.events.emit('engine.disposed')
+    } catch (error) {
+      this.events.emit('engine.error', { error })
+      throw error
     }
-
-    // 发布销毁完成事件
-    this._events.emit('engine.destroy.complete')
-
-    // 清除事件总线
-    // 注意：不要在此之前清除事件，以确保所有销毁事件都能被处理
-    this._events['handlers'].clear()
-    this._events['onceHandlers'].clear()
-
-    this._initialized = false
   }
 
   /**
-   * 使用插件
+   * 注册默认服务
+   * @private
    */
-  public use(plugin: Plugin, options?: any): this {
-    this._plugins.use(plugin, options)
-    return this
+  private _registerDefaultServices(): void {
+    // 注册视图服务 - 假设需要选项参数
+    this._registry.registerService(
+      'viewerService',
+      () => {
+        return new ViewerService(this.events)
+      },
+      async () => {
+        const service = this.viewerService
+        await service.init?.()
+      },
+      async () => {
+        this.viewerService.dispose?.()
+      }
+    )
+
+    // 注册场景服务
+    this._registry.registerService(
+      'sceneService',
+      () => {
+        return new SceneService(this.events)
+      },
+      async () => {
+        await this.sceneService.init?.()
+      },
+      async () => {
+        this.sceneService.dispose?.()
+      }
+    )
+
+    // 注册相机服务（依赖于视图服务）
+    this._registry.registerService(
+      'cameraService',
+      () => {
+        return new CameraService(this.viewerService, this.events)
+      },
+      async () => {
+        await this.cameraService.init?.()
+      },
+      async () => {
+        this.cameraService.dispose?.()
+      }
+    )
+
+    // 注册图层服务（依赖于视图服务）
+    this._registry.registerService(
+      'layerService',
+      () => {
+        return new LayerService(this.viewerService, this.events)
+      },
+      async () => {
+        await this.layerService.init?.()
+      },
+      async () => {
+        this.layerService.dispose?.()
+      }
+    )
+
+    // 注册地形服务（依赖于视图服务）
+    this._registry.registerService(
+      'terrainService',
+      () => {
+        return new TerrainService(this.viewerService.viewer, this.events)
+      },
+      async () => {
+        await this.terrainService.init?.()
+      },
+      async () => {
+        this.terrainService.dispose?.()
+      }
+    )
+
+    // 注册小部件服务
+    this._registry.registerService(
+      'widgetService',
+      () => {
+        // 安全地获取容器
+        const container = this.viewerService.getContainer?.() || document.body
+        return new WidgetService(container, this.events)
+      },
+      async () => {
+        await this.widgetService.init?.()
+      },
+      async () => {
+        this.widgetService.dispose?.()
+      }
+    )
+
+    // 注册工具服务
+    this._registry.registerService(
+      'toolService',
+      () => {
+        // 假设 ToolService 需要多个其他服务
+        return new ToolService(this.events)
+      },
+      async () => {
+        await this.toolService.init?.()
+      },
+      async () => {
+        this.toolService.dispose?.()
+      }
+    )
+
+    // 注册数据服务
+    this._registry.registerService(
+      'dataService',
+      () => {
+        return new DataService(this.events)
+      },
+      async () => {
+        await this.dataService.init?.()
+      },
+      async () => {
+        this.dataService.dispose?.()
+      }
+    )
   }
 
   /**
-   * 注册服务
+   * 应用用户选项
+   * @param options 引擎选项
+   * @private
    */
-  private registerServices(): void {
-    const serviceConfigs = this._options.services || {}
-
-    // 注册核心服务，使用正确的类型转换
-    this._container.registerInstance('container', this._container)
-    this._container.registerInstance('events', this._events)
-    this._container.registerInstance('plugins', this._plugins)
-
-    this._events.emit('engine.services.register', {
-      serviceCount: Object.keys(serviceConfigs).length,
-    })
-  }
-
-  /**
-   * 初始化Cesium Viewer
-   */
-  private async initViewer(): Promise<void> {
-    // 这里将创建和配置Cesium Viewer
-    // 在实际实现时，这部分工作会交给ViewerService处理
-
-    // 简化示例，实际实现会更复杂
-    this._events.emit('engine.viewer.creating')
-
-    // 使用DI容器获取ViewerService
-    // this.viewer = this._container.resolve('viewerService').createViewer();
-
-    this._events.emit('engine.viewer.created')
-  }
-
-  /**
-   * 安装配置的插件
-   */
-  private installPlugins(): void {
-    const plugins = this._options.plugins || []
-    for (const plugin of plugins) {
-      this._plugins.use(plugin)
+  private _applyOptions(options: EngineOptions): void {
+    // 处理容器选项
+    if (options.container) {
+      // 根据参数设置容器
+      let container: HTMLElement
+      if (typeof options.container === 'string') {
+        container = document.getElementById(options.container) || document.createElement('div')
+      } else {
+        container = options.container
+      }
+      // // 假设 viewerService 需要设置容器
+      // if (this.viewerService && typeof this.viewerService.setContainer === 'function') {
+      //   this.viewerService.setContainer(container)
+      // }
     }
 
-    this._events.emit('engine.plugins.installed', {
-      pluginCount: plugins.length,
-    })
+    // 处理其他选项...
+    if (options.options) {
+      const { performance, debug, autoStart } = options.options
+
+      // 应用性能模式
+      if (performance) {
+        // 配置性能相关设置
+      }
+
+      // 应用调试模式
+      if (debug) {
+        // 开启调试相关功能
+      }
+
+      // 处理自动启动
+      if (autoStart) {
+        setTimeout(() => this.init(), 0)
+      }
+    }
   }
 
   /**
-   * 释放引擎资源
+   * 获取相机服务
    */
-  public dispose(): void {
-    this.stop()
+  public get cameraService(): ICameraService {
+    return this.container.resolve<ICameraService>('cameraService')
+  }
 
-    // 发布销毁开始事件
-    this._events.emit('engine.destroy.start')
+  /**
+   * 获取查看器服务
+   */
+  public get viewerService(): IViewerService {
+    return this.container.resolve<IViewerService>('viewerService')
+  }
 
-    // 卸载所有插件
-    const pluginNames = Array.from(this._plugins.plugins.keys())
-    for (const name of pluginNames) {
-      this._plugins.remove(name)
-    }
+  /**
+   * 获取场景服务
+   */
+  public get sceneService(): ISceneService {
+    return this.container.resolve<ISceneService>('sceneService')
+  }
 
-    // 清理事件
-    this._events.clear()
+  /**
+   * 获取图层服务
+   */
+  public get layerService(): ILayerService {
+    return this.container.resolve<ILayerService>('layerService')
+  }
 
-    // 销毁Viewer
-    if (this.viewer) {
-      this.viewer.destroy()
-      this.viewer = null
-    }
+  /**
+   * 获取地形服务
+   */
+  public get terrainService(): ITerrainService {
+    return this.container.resolve<ITerrainService>('terrainService')
+  }
 
-    // 发布销毁完成事件
-    this._events.emit('engine.destroy.complete')
+  /**
+   * 获取小部件服务
+   */
+  public get widgetService(): IWidgetService {
+    return this.container.resolve<IWidgetService>('widgetService')
+  }
 
-    // 清除事件总线
-    // 注意：不要在此之前清除事件，以确保所有销毁事件都能被处理
-    this._events['handlers'].clear()
-    this._events['onceHandlers'].clear()
+  /**
+   * 获取工具服务
+   */
+  public get toolService(): IToolService {
+    return this.container.resolve<IToolService>('toolService')
+  }
 
-    this._initialized = false
+  /**
+   * 获取数据服务
+   */
+  public get dataService(): IDataService {
+    return this.container.resolve<IDataService>('dataService')
   }
 }

@@ -48,9 +48,23 @@ export type ServiceConstructor<T extends Service = Service> = new (...args: any[
 // 服务标识符类型
 export type ServiceIdentifier<T extends Service = Service> = string | symbol | ServiceConstructor<T>
 
+// 服务依赖类型 - 可以是服务标识符或具体值
+export type ServiceDependency = ServiceIdentifier<any> | any
+
+// 依赖注入容器接口
+export interface IContainer extends Service {
+  register<T extends Service>(
+    id: ServiceIdentifier<T>,
+    implementation: ServiceConstructor<T>,
+    dependenciesOrSingleton?: ServiceDependency[] | boolean
+  ): void
+  registerInstance<T extends Service>(id: ServiceIdentifier<T>, instance: T): void
+  resolve<T extends Service>(id: ServiceIdentifier<T>): T
+  has<T extends Service>(id: ServiceIdentifier<T>): boolean
+}
+
 // 事件处理函数
 export type EventHandler<T = any> = (data: T) => void
-
 // 事件总线接口
 export interface IEventBus extends Service {
   on<T = any>(eventName: string, handler: EventHandler<T>): () => void
@@ -60,18 +74,6 @@ export interface IEventBus extends Service {
   clear(): void
   handlers: Map<string, Set<EventHandler>>
   onceHandlers: Map<string, Set<EventHandler>>
-}
-
-// 依赖注入容器接口
-export interface IContainer extends Service {
-  register<T extends Service>(
-    id: ServiceIdentifier<T>,
-    implementation: ServiceConstructor<T>,
-    singleton?: boolean
-  ): void
-  registerInstance<T extends Service>(id: ServiceIdentifier<T>, instance: T): void
-  resolve<T extends Service>(id: ServiceIdentifier<T>): T
-  has<T extends Service>(id: ServiceIdentifier<T>): boolean
 }
 
 // 插件管理器接口

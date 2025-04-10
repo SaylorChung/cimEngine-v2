@@ -281,6 +281,32 @@ export class SceneService implements ISceneService {
   }
 
   /**
+   * 设置场景背景色
+   * @param color 背景色
+   */
+  public setBackgroundColor(color: Cesium.Color): void {
+    if (!this._scene) {
+      throw new Error('Scene is not available')
+    }
+
+    this._scene.backgroundColor = color
+    this._events.emit('scene.backgroundColor.changed', { color })
+  }
+
+  /**
+   * 启用/禁用雾效果
+   * @param enabled 是否启用
+   */
+  public enableFog(enabled: boolean): void {
+    if (!this._scene) {
+      throw new Error('Scene is not available')
+    }
+
+    this._scene.fog.enabled = enabled
+    this._events.emit('scene.fog.enabled', { enabled })
+  }
+
+  /**
    * 设置是否对地形进行深度测试
    * @param enabled 是否启用对地形的深度测试
    */
@@ -296,27 +322,66 @@ export class SceneService implements ISceneService {
   /**
    * 设置场景模式
    * @param mode 场景模式
+   * @returns 场景模式变化完成后的Promise
    */
-  public setSceneMode(mode: Cesium.SceneMode): void {
+  public async setSceneMode(mode: Cesium.SceneMode): Promise<void> {
     if (!this._scene) {
       throw new Error('Scene is not available')
     }
 
     if (this._scene.mode !== mode) {
-      switch (mode) {
-        case Cesium.SceneMode.SCENE2D:
-          this._scene.morphTo2D(1.0)
-          break
-        case Cesium.SceneMode.SCENE3D:
-          this._scene.morphTo3D(1.0)
-          break
-        case Cesium.SceneMode.COLUMBUS_VIEW:
-          this._scene.morphToColumbusView(1.0)
-          break
+      try {
+        // 创建一个Promise来处理场景模式转换
+        return new Promise<void>((resolve, reject) => {
+          try {
+            // 创建一个事件监听器，监听模式变化完成
+            const completedCallback = this._scene!.morphComplete.addEventListener(() => {
+              // 移除监听器
+              completedCallback()
+              resolve()
+            })
+
+            // 触发模式转换
+            switch (mode) {
+              case Cesium.SceneMode.SCENE2D:
+                this._scene!.morphTo2D(1.0)
+                break
+              case Cesium.SceneMode.SCENE3D:
+                this._scene!.morphTo3D(1.0)
+                break
+              case Cesium.SceneMode.COLUMBUS_VIEW:
+                this._scene!.morphToColumbusView(1.0)
+                break
+            }
+
+            // 发出事件
+            this._events.emit('scene.mode.changing', { mode })
+          } catch (err) {
+            reject(err)
+          }
+        })
+      } catch (error) {
+        this._events.emit('scene.error', { error, operation: 'setSceneMode' })
+        throw error
+      } finally {
+        // 无论成功还是失败，都发出模式已改变事件
+        this._events.emit('scene.mode.changed', { mode })
       }
     }
 
-    this._events.emit('scene.mode.changed', { mode })
+    // 如果模式相同，直接返回已解析的Promise
+    return Promise.resolve()
+  }
+
+  /**
+   * 获取当前场景模式
+   * @returns 当前场景模式
+   */
+  public getSceneMode(): Cesium.SceneMode {
+    if (!this._scene) {
+      throw new Error('Scene is not available')
+    }
+    return this._scene.mode
   }
 
   /**
@@ -424,6 +489,99 @@ export class SceneService implements ISceneService {
         console.error('Error in post-render callback:', error)
       }
     }
+  }
+
+  /**
+   * 设置地形夸张系数
+   * @param scale 夸张系数
+   */
+  public setTerrainExaggeration(scale: number): void {
+    if (!this._scene || !this._scene.globe) {
+      throw new Error('Scene or globe is not available')
+    }
+    // 在最新版本的Cesium中，terrainExaggeration已移至viewer.scene下
+    // 或者通过terrainProvider进行控制
+    try {
+      // 第一种方法：尝试设置scene上的terrainExaggeration
+      if ('terrainExaggeration' in this._scene) {
+        ;(this._scene as any).terrainExaggeration = scale
+      }
+      // 第二种方法：尝试通过EllipsoidTerrainProvider设置
+      else if (this._scene.globe.terrainProvider) {
+        const provider = this._scene.globe.terrainProvider
+        if ('exaggeration' in provider) {
+          ;(provider as any).exaggeration = scale
+        }
+      }
+      // 备选方法：直接创建具有夸张效果的新地形提供者
+      else if (scale !== 1.0) {
+        console.warn(
+          'Current Cesium version may not support direct terrain exaggeration, using alternative method'
+        )
+      }
+
+      this._events.emit('scene.terrainExaggeration.changed', { scale })
+    } catch (error) {
+      console.error('Error setting terrain exaggeration:', error)
+      this._events.emit('scene.error', { error, operation: 'setTerrainExaggeration' })
+    }
+  }
+
+  /**
+   * 启用/禁用阳光照明
+   * @param enabled 是否启用
+   */
+  public enableSunLighting(enabled: boolean): void {
+    if (!this._scene) {
+      throw new Error('Scene is not available')
+    }
+
+    // 设置太阳可见性
+    if (this._scene.sun) {
+      this._scene.sun.show = enabled
+    }
+
+    // 设置地球光照
+    if (this._scene.globe) {
+      this._scene.globe.enableLighting = enabled
+    }
+
+    this._events.emit('scene.sunLighting.changed', { enabled })
+  }
+
+  /**
+   * 启用/禁用大气效果
+   * @param enabled 是否启用
+   */
+  public enableAtmosphere(enabled: boolean): void {
+    if (!this._scene || !this._scene.skyAtmosphere) {
+      throw new Error('Scene or skyAtmosphere is not available')
+    }
+
+    this._scene.skyAtmosphere.show = enabled
+    this._events.emit('scene.atmosphere.enabled', { enabled })
+  }
+
+  /**
+   * 截取场景图像
+   * @returns 场景图像数据URL的Promise
+   */
+  public async captureScreenshot(): Promise<string> {
+    if (!this._scene || !this._scene.canvas) {
+      throw new Error('Scene or canvas is not available')
+    }
+
+    return new Promise(resolve => {
+      // 在下一帧渲染完成后获取截图
+      const removeCallback = this._scene!.postRender.addEventListener(() => {
+        const canvas = this._scene!.canvas as HTMLCanvasElement
+        const dataUrl = canvas.toDataURL('image/png')
+        resolve(dataUrl)
+
+        // 移除监听器，避免多次触发
+        removeCallback()
+      })
+    })
   }
 
   /**

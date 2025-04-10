@@ -1,4 +1,5 @@
 import Cesium from '../../cesiumLoader'
+import { Service } from '../../core/types'
 
 /**
  * 相机位置信息
@@ -83,7 +84,7 @@ export interface CameraAnimation {
 /**
  * 相机服务接口定义
  */
-export interface ICameraService {
+export interface ICameraService extends Service {
   // 获取Cesium原生相机实例
   getCameraInstance(): Cesium.Camera
 

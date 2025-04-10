@@ -1,77 +1,47 @@
 /**
  * 依赖注入容器实现
  */
-import { IContainer, Service, ServiceConstructor, ServiceIdentifier } from './types'
-
-/**
- * 依赖注入容器
- * 负责管理服务的注册和解析
- */
-export class Container implements IContainer {
-  private _services: Map<ServiceIdentifier<any>, ServiceConstructor<any>> = new Map()
-  private _instances: Map<ServiceIdentifier<any>, any> = new Map()
-  private _singletons: Set<ServiceIdentifier<any>> = new Set()
-
+export class Container {
+  // 存储服务构造函数
+  private _constructors: Map<string, new (...args: any[]) => any> = new Map()
+  // 存储服务实例
+  private _instances: Map<string, any> = new Map()
   /**
-   * 注册服务
+   * 注册服务构造函数
+   * @param name 服务名称
+   * @param constructor 服务构造函数
    */
-  register<T extends Service>(
-    id: ServiceIdentifier<T>,
-    implementation: ServiceConstructor<T>,
-    singleton = true
-  ): void {
-    this._services.set(id, implementation)
-    if (singleton) {
-      this._singletons.add(id)
-    }
+  register<T>(name: string, constructor: new (...args: any[]) => T): void {
+    this._constructors.set(name, constructor)
   }
-
   /**
-   * 注册实例
+   * 注册服务实例
+   * @param name 服务名称
+   * @param instance 服务实例
    */
-  registerInstance<T extends Service>(id: ServiceIdentifier<T>, instance: T): void {
-    this._instances.set(id, instance)
+  registerInstance<T>(name: string, instance: T): void {
+    this._instances.set(name, instance)
   }
-
   /**
    * 解析服务
+   * @param name 服务名称
+   * @returns 服务实例
    */
-  resolve<T extends Service>(id: ServiceIdentifier<T>): T {
-    // 先检查实例
-    const instance = this._instances.get(id)
-    if (instance) {
-      return instance
+  resolve<T>(name: string): T {
+    // 如果已经有实例，直接返回
+    if (this._instances.has(name)) {
+      return this._instances.get(name) as T
     }
 
-    // 查找服务注册
-    const implementation = this._services.get(id)
-    if (!implementation) {
-      throw new Error(`Service "${id.toString()}" not found`)
+    // 获取构造函数
+    const constructor = this._constructors.get(name)
+    if (!constructor) {
+      throw new Error(`服务未注册: ${name}`)
     }
-
-    // 如果是单例模式，检查是否已有实例
-    if (this._singletons.has(id)) {
-      const existingInstance = this._instances.get(id)
-      if (existingInstance) {
-        return existingInstance
-      }
-    }
-
-    // 创建新实例
-    const newInstance = new implementation()
-
-    // 如果是单例，保存实例
-    if (this._singletons.has(id)) {
-      this._instances.set(id, newInstance)
-    }
-
-    return newInstance
-  }
-
-  /**
-   * 检查服务是否已注册
-   */
-  has<T extends Service>(id: ServiceIdentifier<T>): boolean {
-    return this._services.has(id) || this._instances.has(id)
+    // 创建实例
+    const instance = new constructor()
+    // 存储实例以便重用
+    this._instances.set(name, instance)
+    return instance as T
   }
 }
