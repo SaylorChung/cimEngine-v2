@@ -2,25 +2,29 @@
  * ViewerService实现
  * 负责创建和管理Cesium Viewer实例
  */
+import { injectable, inject } from 'tsyringe'
+import type { IViewerService, ViewerOptions } from './types'
+import type { IEventBus } from '../../core/types'
 import Cesium from '../../cesiumLoader'
-import { IEventBus } from '../../core/types'
-import { IViewerService, ViewerOptions } from './types'
 
 /**
  * Cesium Viewer服务实现
  */
+@injectable()
 export class ViewerService implements IViewerService {
-  private _viewer: Cesium.Viewer | null = null
   private _container: HTMLElement | null = null
-  private _events: IEventBus
+  private _events: IEventBus // 使用接口类型
+  private _viewer: Cesium.Viewer | null = null
 
   /**
    * 构造函数
    * @param events 事件总线
    */
-  constructor(events: IEventBus) {
+  constructor(@inject('EventBus') events: IEventBus) {
+    // 注入接口类型
     this._events = events
   }
+
   /**
    * 获取Viewer实例
    */

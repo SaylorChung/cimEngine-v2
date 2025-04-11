@@ -1,18 +1,17 @@
-import { Container } from './container'
-import { EngineOptions } from './types'
 import { EventBus } from './eventBus'
 import { ApiManager } from './apiManager'
-import { ServiceRegistry } from './serviceRegistry' // 添加导入
+import { container, DependencyContainer } from 'tsyringe'
 
 // 导入所有服务接口
-import { ICameraService } from '../services/camera/types'
-import { IViewerService } from '../services/viewer/types'
-import { ISceneService } from '../services/scene/types'
-import { ILayerService } from '../services/layer/types'
-import { ITerrainService } from '../services/terrain/types'
-import { IWidgetService } from '../services/widget/types'
-import { IToolService } from '../services/tool/types'
-import { IDataService } from '../services/data/types'
+import type { EngineOptions, IEngine, IEventBus } from './types'
+import type { ICameraService } from '../services/camera/types'
+import type { IViewerService } from '../services/viewer/types'
+import type { ISceneService } from '../services/scene/types'
+import type { ILayerService } from '../services/layer/types'
+import type { ITerrainService } from '../services/terrain/types'
+import type { IWidgetService } from '../services/widget/types'
+import type { IToolService } from '../services/tool/types'
+import type { IDataService } from '../services/data/types'
 
 // 导入服务实现
 import { ViewerService } from '../services/viewer/viewerService'
@@ -24,19 +23,20 @@ import { WidgetService } from '../services/widget/widgetService'
 import { ToolService } from '../services/tool/toolService'
 import { DataService } from '../services/data/dataService'
 
+// 导入 Api服务实现
+import { CameraApi } from '../apis/cameraApi'
+import { SceneApi } from '../apis/sceneApi'
+import { LayerApi } from '../apis/layerApi'
+import { ViewerApi } from '../apis/viewerApi'
+
 /**
  * 引擎核心类
  */
-export class Engine {
-  /**
-   * 依赖注入容器
-   */
-  public readonly container: Container
-
+export class Engine implements IEngine {
   /**
    * 事件总线
    */
-  public readonly events: EventBus
+  public readonly events: IEventBus
 
   /**
    * API管理器
@@ -44,9 +44,9 @@ export class Engine {
   public readonly api: ApiManager
 
   /**
-   * 服务注册表
+   * 依赖注入容器
    */
-  private _registry: ServiceRegistry // 添加属性声明
+  private _container: DependencyContainer
 
   /**
    * 是否已初始化
@@ -58,23 +58,21 @@ export class Engine {
    * @param options 引擎选项
    */
   constructor(options: Partial<EngineOptions> = {}) {
-    // 创建容器
-    this.container = new Container()
+    // 创建子容器，确保每个引擎实例有独立的服务集合
+    this._container = container.createChildContainer()
 
-    // 创建事件总线
+    // 创建事件总线 - 作为基础组件直接实例化
+    // 事件总线是所有服务的基础依赖，需要在容器初始化前可用
     this.events = new EventBus()
 
-    // 注册核心服务
-    this.container.registerInstance('events', this.events)
+    // 然后将其注册到容器中供其他服务使用
+    this._container.registerInstance('EventBus', this.events)
 
-    // 创建服务注册表
-    this._registry = new ServiceRegistry(this.container, this.events) // 初始化属性
-
-    // 注册默认服务
-    this._registerDefaultServices()
+    // 注册服务
+    this._registerServices()
 
     // 创建API管理器
-    this.api = new ApiManager(this)
+    this.api = this._container.resolve<ApiManager>('ApiManager')
 
     // 应用用户选项
     this._applyOptions(options as EngineOptions)
@@ -90,8 +88,33 @@ export class Engine {
     }
 
     try {
+      // 初始化视图服务 (首先初始化)
+      if (typeof this.viewerService.init === 'function') {
+        await this.viewerService.init()
+      }
+
+      // 初始化场景服务
+      if (typeof this.sceneService.init === 'function') {
+        await this.sceneService.init()
+      }
+
+      // 初始化其他服务
+      const services = [
+        this.cameraService,
+        this.layerService,
+        this.terrainService,
+        this.widgetService,
+        this.toolService,
+        this.dataService,
+      ]
+
       // 初始化所有服务
-      await this._registry.initServices()
+      for (const service of services) {
+        if (service && typeof service.init === 'function') {
+          await service.init()
+        }
+      }
+
       // 初始化API
       this.api.init()
       this._initialized = true
@@ -111,10 +134,30 @@ export class Engine {
     }
 
     try {
+      // 以相反的顺序销毁服务
+      const services = [
+        this.dataService,
+        this.toolService,
+        this.widgetService,
+        this.terrainService,
+        this.layerService,
+        this.cameraService,
+        this.sceneService,
+        this.viewerService,
+      ]
+
       // 销毁所有服务
-      await this._registry.disposeServices()
+      for (const service of services) {
+        if (service && typeof service.dispose === 'function') {
+          await service.dispose()
+        }
+      }
+
       this._initialized = false
       this.events.emit('engine.disposed')
+
+      // 销毁子容器
+      this._container = container.createChildContainer()
     } catch (error) {
       this.events.emit('engine.error', { error })
       throw error
@@ -122,125 +165,34 @@ export class Engine {
   }
 
   /**
-   * 注册默认服务
+   * 注册所有服务
    * @private
    */
-  private _registerDefaultServices(): void {
-    // 注册视图服务 - 假设需要选项参数
-    this._registry.registerService(
-      'viewerService',
-      () => {
-        return new ViewerService(this.events)
-      },
-      async () => {
-        const service = this.viewerService
-        await service.init?.()
-      },
-      async () => {
-        this.viewerService.dispose?.()
-      }
-    )
+  private _registerServices(): void {
+    // 注册引擎实例
+    this._container.registerInstance('Engine', this)
 
-    // 注册场景服务
-    this._registry.registerService(
-      'sceneService',
-      () => {
-        return new SceneService(this.events)
-      },
-      async () => {
-        await this.sceneService.init?.()
-      },
-      async () => {
-        this.sceneService.dispose?.()
-      }
-    )
+    // 注册事件总线
+    this._container.registerInstance('EventBus', this.events)
 
-    // 注册相机服务（依赖于视图服务）
-    this._registry.registerService(
-      'cameraService',
-      () => {
-        return new CameraService(this.viewerService, this.events)
-      },
-      async () => {
-        await this.cameraService.init?.()
-      },
-      async () => {
-        this.cameraService.dispose?.()
-      }
-    )
+    // 注册所有服务为单例，但只在这个引擎实例的容器中是单例
+    this._container.registerSingleton<IViewerService>('ViewerService', ViewerService)
+    this._container.registerSingleton<ISceneService>('SceneService', SceneService)
+    this._container.registerSingleton<ICameraService>('CameraService', CameraService)
+    this._container.registerSingleton<ILayerService>('LayerService', LayerService)
+    this._container.registerSingleton<ITerrainService>('TerrainService', TerrainService)
+    this._container.registerSingleton<IWidgetService>('WidgetService', WidgetService)
+    this._container.registerSingleton<IToolService>('ToolService', ToolService)
+    this._container.registerSingleton<IDataService>('DataService', DataService)
 
-    // 注册图层服务（依赖于视图服务）
-    this._registry.registerService(
-      'layerService',
-      () => {
-        return new LayerService(this.viewerService, this.events)
-      },
-      async () => {
-        await this.layerService.init?.()
-      },
-      async () => {
-        this.layerService.dispose?.()
-      }
-    )
+    // 注册API模块
+    this._container.registerSingleton('CameraApi', CameraApi)
+    this._container.registerSingleton('SceneApi', SceneApi)
+    this._container.registerSingleton('LayerApi', LayerApi)
+    this._container.registerSingleton('ViewerApi', ViewerApi)
 
-    // 注册地形服务（依赖于视图服务）
-    this._registry.registerService(
-      'terrainService',
-      () => {
-        return new TerrainService(this.viewerService.viewer, this.events)
-      },
-      async () => {
-        await this.terrainService.init?.()
-      },
-      async () => {
-        this.terrainService.dispose?.()
-      }
-    )
-
-    // 注册小部件服务
-    this._registry.registerService(
-      'widgetService',
-      () => {
-        // 安全地获取容器
-        const container = this.viewerService.getContainer?.() || document.body
-        return new WidgetService(container, this.events)
-      },
-      async () => {
-        await this.widgetService.init?.()
-      },
-      async () => {
-        this.widgetService.dispose?.()
-      }
-    )
-
-    // 注册工具服务
-    this._registry.registerService(
-      'toolService',
-      () => {
-        // 假设 ToolService 需要多个其他服务
-        return new ToolService(this.events)
-      },
-      async () => {
-        await this.toolService.init?.()
-      },
-      async () => {
-        this.toolService.dispose?.()
-      }
-    )
-
-    // 注册数据服务
-    this._registry.registerService(
-      'dataService',
-      () => {
-        return new DataService(this.events)
-      },
-      async () => {
-        await this.dataService.init?.()
-      },
-      async () => {
-        this.dataService.dispose?.()
-      }
-    )
+    // 注册API管理器
+    this._container.registerSingleton('ApiManager', ApiManager)
   }
 
   /**
@@ -252,32 +204,27 @@ export class Engine {
     // 处理容器选项
     if (options.container) {
       // 根据参数设置容器
-      let container: HTMLElement
+      let containerElement: HTMLElement
       if (typeof options.container === 'string') {
-        container = document.getElementById(options.container) || document.createElement('div')
+        containerElement =
+          document.getElementById(options.container) || document.createElement('div')
       } else {
-        container = options.container
+        containerElement = options.container
       }
-      // // 假设 viewerService 需要设置容器
-      // if (this.viewerService && typeof this.viewerService.setContainer === 'function') {
-      //   this.viewerService.setContainer(container)
-      // }
+      // 如果需要在创建 ViewerService 之前提供容器
+      this._container.registerInstance('Container', containerElement)
     }
-
     // 处理其他选项...
     if (options.options) {
       const { performance, debug, autoStart } = options.options
-
       // 应用性能模式
       if (performance) {
         // 配置性能相关设置
       }
-
       // 应用调试模式
       if (debug) {
         // 开启调试相关功能
       }
-
       // 处理自动启动
       if (autoStart) {
         setTimeout(() => this.init(), 0)
@@ -289,55 +236,55 @@ export class Engine {
    * 获取相机服务
    */
   public get cameraService(): ICameraService {
-    return this.container.resolve<ICameraService>('cameraService')
+    return this._container.resolve<ICameraService>('CameraService')
   }
 
   /**
    * 获取查看器服务
    */
   public get viewerService(): IViewerService {
-    return this.container.resolve<IViewerService>('viewerService')
+    return this._container.resolve<IViewerService>('ViewerService')
   }
 
   /**
    * 获取场景服务
    */
   public get sceneService(): ISceneService {
-    return this.container.resolve<ISceneService>('sceneService')
+    return this._container.resolve<ISceneService>('SceneService')
   }
 
   /**
    * 获取图层服务
    */
   public get layerService(): ILayerService {
-    return this.container.resolve<ILayerService>('layerService')
+    return this._container.resolve<ILayerService>('LayerService')
   }
 
   /**
    * 获取地形服务
    */
   public get terrainService(): ITerrainService {
-    return this.container.resolve<ITerrainService>('terrainService')
+    return this._container.resolve<ITerrainService>('TerrainService')
   }
 
   /**
    * 获取小部件服务
    */
   public get widgetService(): IWidgetService {
-    return this.container.resolve<IWidgetService>('widgetService')
+    return this._container.resolve<IWidgetService>('WidgetService')
   }
 
   /**
    * 获取工具服务
    */
   public get toolService(): IToolService {
-    return this.container.resolve<IToolService>('toolService')
+    return this._container.resolve<IToolService>('ToolService')
   }
 
   /**
    * 获取数据服务
    */
   public get dataService(): IDataService {
-    return this.container.resolve<IDataService>('dataService')
+    return this._container.resolve<IDataService>('DataService')
   }
 }

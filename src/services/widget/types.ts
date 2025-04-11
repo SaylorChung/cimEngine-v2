@@ -1,9 +1,8 @@
-import { Service } from 'artis'
-
+import type { IService } from '../../core/types'
 /**
  * 小部件服务接口
  */
-export interface IWidgetService extends Service {
+export interface IWidgetService extends IService {
   /**
    * 添加小部件
    * @param widget 小部件实例

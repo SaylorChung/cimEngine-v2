@@ -44,5 +44,7 @@
     "vue": "^3.4.0"
   },
   "dependencies": {
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.9.1"
   }
 }

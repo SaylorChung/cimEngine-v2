@@ -1,9 +1,11 @@
 import { IToolService, Tool } from './types'
 import { EventBus } from '../../core/eventBus'
+import { injectable, inject } from 'tsyringe'
 
 /**
  * 工具服务实现
  */
+@injectable()
 export class ToolService implements IToolService {
   private _events: EventBus
   private _tools: Map<string, Tool> = new Map()
@@ -13,7 +15,7 @@ export class ToolService implements IToolService {
    * 构造函数
    * @param events 事件总线
    */
-  constructor(events: EventBus) {
+  constructor(@inject('EventBus') events: EventBus) {
     this._events = events
   }
 

@@ -1,37 +1,42 @@
 /**
  * Artis 主入口文件
  */
+import 'reflect-metadata'
 import { Engine } from './core/engine'
-import { Container } from './core/container'
-import { EventBus } from './core/eventBus'
+import { IEngine } from './core/types' // 显式导入接口
 import { PluginManager } from './core/pluginManager'
-import * as CesiumModule from './cesiumLoader' // 导入Cesium模块
+import * as CesiumModule from './cesiumLoader'
 
-// 创建导出对象接口
+// 定义版本号常量
+const VERSION = '2.0.1'
+
+/**
+ * Artis 声明接口
+ */
 interface IArtis {
-  CimEngine: typeof Engine
-  Container: typeof Container
-  EventBus: typeof EventBus
+  Engine: typeof Engine // 名称统一为 Engine
   PluginManager: typeof PluginManager
   VERSION: string
-  // 包含 Cesium
   Cesium: typeof CesiumModule
 }
 
 // 创建导出对象
 const artis: IArtis = {
-  CimEngine: Engine,
-  Container: Container,
-  EventBus: EventBus,
-  PluginManager: PluginManager,
-  VERSION: '2.0.0',
-  Cesium: CesiumModule, // 添加Cesium模块到导出对象
+  Engine, // 使用简写语法
+  PluginManager,
+  VERSION: '2.0.1',
+  Cesium: CesiumModule,
 }
 
 // 导出默认对象
 export default artis
 
+// 命名导出主要组件
+export { Engine, PluginManager, VERSION }
+export type { IEngine } // 显式导出接口
+
 // 导出类型定义
 export * from './core/types'
+
 // 导出Cesium类型
 export * from './cesiumLoader'

@@ -1,9 +1,9 @@
-import { Service } from 'artis'
+import type { IService } from '../../core/types'
 
 /**
  * 数据服务接口
  */
-export interface IDataService extends Service {
+export interface IDataService extends IService {
   /**
    * 加载数据
    * @param url 数据URL

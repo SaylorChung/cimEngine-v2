@@ -20,7 +20,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 // 使用配置好的别名导入
-import artis from 'artis'
+import artis from '../artis'
 
 // 创建引用
 const mapContainer = ref<HTMLDivElement | null>(null)
@@ -28,7 +28,7 @@ const currentMode = ref('3D')
 const performanceMode = ref<'high' | 'medium' | 'low'>('medium')
 
 // 创建引擎
-const engine = new artis.CimEngine()
+const engine = new artis.Engine()
 
 // 初始化地图
 onMounted(async () => {
@@ -47,24 +47,21 @@ onMounted(async () => {
       sceneModePicker: false,
       timeline: false,
       navigationHelpButton: false,
-      // 移除不确定是否支持的参数
-      // navigationInstructionsInitiallyVisible: false,
     })
 
     // 设置默认性能模式
     engine.api.viewer.setPerformanceMode(performanceMode.value)
 
-    // 添加默认的OSM影像图层
+    // 添加默认的OSM影像图层 - 使用字符串字面量替代枚举
     const imageryLayer = await engine.api.layer.addLayer({
-      id: 'osm_base', // 添加必需的id字段
+      id: 'osm_base',
       name: '默认OSM影像',
-      type: artis.LayerType.IMAGERY, // 使用枚举值而非字符串
-      url: 'https://tile.openstreetmap.org/', // 添加必需的url字段
-      visible: true, // 使用visible而非show
+      type: 'imagery', // 使用字符串字面量
+      url: 'https://tile.openstreetmap.org/',
+      visible: true,
     })
 
     // 调整相机位置到更好的位置
-    // 使用flyTo方法，这是CameraApi中存在的方法
     engine.api.camera.flyTo({
       destination: artis.Cesium.Cartesian3.fromDegrees(116.391, 39.891, 1000),
       orientation: {
@@ -113,6 +110,7 @@ onBeforeUnmount(() => {
   engine.dispose()
 })
 </script>
+
 <style scoped>
 .app-container {
   width: 100%;

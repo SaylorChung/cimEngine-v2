@@ -1,7 +1,7 @@
 import Cesium from '../../cesiumLoader'
-import { IViewerService } from '../viewer/types'
-import { IEventBus } from '../../core/types'
-import {
+import type { IEventBus } from '../../core/types'
+import type { IViewerService } from '../viewer/types'
+import type {
   ILayerService,
   Layer,
   LayerOptionsUnion,
@@ -17,17 +17,22 @@ import { ImageryLayer } from '../../models/layer/ImageryLayer'
 import { TilesetLayer } from '../../models/layer/TilesetLayer'
 import { GeoJsonLayer } from '../../models/layer/GeoJsonLayer'
 import { CustomLayer } from '../../models/layer/CustomLayer'
+import { injectable, inject } from 'tsyringe'
 
 /**
  * 图层服务实现
  */
+@injectable()
 export class LayerService implements ILayerService {
   private _viewerService: IViewerService
   private _events: IEventBus
   private _layers: Map<string, Layer>
   private _layerGroups: Map<string, Set<string>>
 
-  constructor(viewerService: IViewerService, events: IEventBus) {
+  constructor(
+    @inject('ViewerService') viewerService: IViewerService,
+    @inject('EventBus') events: IEventBus
+  ) {
     this._viewerService = viewerService
     this._events = events
     this._layers = new Map<string, Layer>()

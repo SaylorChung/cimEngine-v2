@@ -2,7 +2,7 @@
  * ViewerService类型定义
  */
 import Cesium from '../../cesiumLoader'
-import { Service } from '../../core/types'
+import type { IService } from '../../core/types'
 
 /**
  * Viewer服务选项
@@ -35,7 +35,7 @@ export interface ViewerOptions {
 /**
  * ViewerService接口
  */
-export interface IViewerService extends Service {
+export interface IViewerService extends IService {
   // Viewer实例
   readonly viewer: Cesium.Viewer
 

@@ -1,11 +1,15 @@
+import type { IEventBus } from 'artis'
 import { IWidgetService, WidgetOptions } from './types'
-import { EventBus } from '../../core/eventBus'
+import { injectable, inject } from 'tsyringe'
+import type { IViewerService } from '../viewer/types'
 
 /**
  * 小部件服务实现
  */
+@injectable()
 export class WidgetService implements IWidgetService {
-  private _events: EventBus
+  private _events: IEventBus
+  private _viewerService: IViewerService
   private _widgets: Map<string, any> = new Map()
   private _widgetOptions: Map<string, WidgetOptions> = new Map()
 
@@ -14,8 +18,16 @@ export class WidgetService implements IWidgetService {
    * @param container 主容器元素
    * @param events 事件总线
    */
-  constructor(container: HTMLElement, events: EventBus) {
+  constructor(
+    @inject('ViewerService') viewerService: IViewerService,
+    @inject('EventBus') events: IEventBus
+  ) {
+    this._viewerService = viewerService
     this._events = events
+  }
+
+  public get container(): HTMLElement {
+    return this._viewerService.getContainer() || document.body
   }
 
   /**

@@ -2,7 +2,7 @@
  * SceneService类型定义
  */
 import Cesium from '../../cesiumLoader'
-import { Service } from '../../core/types'
+import type { IService } from '../../core/types'
 
 /**
  * 场景模式枚举
@@ -58,7 +58,7 @@ export interface AtmosphereOptions {
 /**
  * 场景服务接口
  */
-export interface ISceneService extends Service {
+export interface ISceneService extends IService {
   /**
    * 获取Scene实例
    */

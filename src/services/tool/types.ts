@@ -1,9 +1,9 @@
-import { Service } from 'artis'
+import type { IService } from '../../core/types'
 
 /**
  * 工具服务接口
  */
-export interface IToolService extends Service {
+export interface IToolService extends IService {
   /**
    * 激活工具
    * @param toolId 工具ID

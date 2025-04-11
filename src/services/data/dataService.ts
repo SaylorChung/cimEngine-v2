@@ -1,9 +1,11 @@
-import { IDataService, DataLoadOptions, ExportOptions } from './types'
-import { EventBus } from '../../core/eventBus'
+import { injectable, inject } from 'tsyringe'
+import type { IDataService, DataLoadOptions, ExportOptions } from './types'
+import type { EventBus } from '../../core/eventBus'
 
 /**
  * 数据服务实现
  */
+@injectable()
 export class DataService implements IDataService {
   private _events: EventBus
   private _dataStore: Map<string, any> = new Map()
@@ -12,7 +14,7 @@ export class DataService implements IDataService {
    * 构造函数
    * @param events 事件总线
    */
-  constructor(events: EventBus) {
+  constructor(@inject('EventBus') events: EventBus) {
     this._events = events
   }
 

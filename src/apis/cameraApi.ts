@@ -1,5 +1,6 @@
-import { Engine } from '../core/engine'
-import {
+import { injectable, inject } from 'tsyringe'
+import type { ICameraService } from '../services/camera/types'
+import type {
   CameraPosition,
   CameraViewOptions,
   CameraFlyToOptions,
@@ -10,7 +11,6 @@ import {
  * 相机API选项类型
  */
 export interface CameraApiOptions {
-  // 从相机服务类型中选择需要暴露给用户的选项
   viewOptions?: CameraViewOptions
   flyOptions?: CameraFlyToOptions
   limits?: CameraLimits
@@ -19,11 +19,11 @@ export interface CameraApiOptions {
 /**
  * 相机控制API
  */
+@injectable()
 export class CameraApi {
-  private _engine: Engine
-
-  constructor(engine: Engine) {
-    this._engine = engine
+  private _cameraService: ICameraService
+  constructor(@inject('CameraService') cameraService: ICameraService) {
+    this._cameraService = cameraService
   }
 
   /**
@@ -31,7 +31,7 @@ export class CameraApi {
    * @param options 视角选项
    */
   setView(options: CameraViewOptions): void {
-    this._engine.cameraService.setView(options)
+    this._cameraService.setView(options)
   }
 
   /**
@@ -40,7 +40,7 @@ export class CameraApi {
    * @returns Promise，飞行完成返回true，取消返回false
    */
   flyTo(options: CameraFlyToOptions): Promise<boolean> {
-    return this._engine.cameraService.flyTo(options)
+    return this._cameraService.flyTo(options)
   }
 
   /**
@@ -49,7 +49,7 @@ export class CameraApi {
    * @param offset 视角偏移
    */
   lookAt(target: any, offset: any): void {
-    this._engine.cameraService.lookAt(target, offset)
+    this._cameraService.lookAt(target, offset)
   }
 
   /**
@@ -57,7 +57,7 @@ export class CameraApi {
    * @param limits 限制选项
    */
   setLimits(limits: CameraLimits): void {
-    this._engine.cameraService.setLimits(limits)
+    this._cameraService.setLimits(limits)
   }
 
   /**
@@ -65,7 +65,7 @@ export class CameraApi {
    * @returns Promise，完成返回true
    */
   flyToNorth(): Promise<boolean> {
-    return this._engine.cameraService.flyToNorth()
+    return this._cameraService.flyToNorth()
   }
 
   /**
@@ -74,7 +74,7 @@ export class CameraApi {
    * @returns 位置ID
    */
   savePosition(name?: string): string {
-    return this._engine.cameraService.savePosition(name)
+    return this._cameraService.savePosition(name)
   }
 
   /**
@@ -83,7 +83,7 @@ export class CameraApi {
    * @returns 是否成功恢复
    */
   restorePosition(id: string): boolean {
-    return this._engine.cameraService.restorePosition(id)
+    return this._cameraService.restorePosition(id)
   }
 
   /**
@@ -91,7 +91,7 @@ export class CameraApi {
    * @returns 相机位置历史记录
    */
   getPositionHistory(): CameraPosition[] {
-    return this._engine.cameraService.getPositionHistory()
+    return this._cameraService.getPositionHistory()
   }
 
   /**
@@ -100,9 +100,9 @@ export class CameraApi {
    */
   enableOrbitControl(enabled: boolean = true): void {
     if (enabled) {
-      this._engine.cameraService.enableOrbitControl()
+      this._cameraService.enableOrbitControl()
     } else {
-      this._engine.cameraService.disableOrbitControl()
+      this._cameraService.disableOrbitControl()
     }
   }
 
@@ -112,9 +112,9 @@ export class CameraApi {
    */
   enableFirstPersonControl(enabled: boolean = true): void {
     if (enabled) {
-      this._engine.cameraService.enableFirstPersonControl()
+      this._cameraService.enableFirstPersonControl()
     } else {
-      this._engine.cameraService.disableFirstPersonControl()
+      this._cameraService.disableFirstPersonControl()
     }
   }
 
@@ -124,7 +124,7 @@ export class CameraApi {
    * @returns 取消订阅函数
    */
   onMoveEnd(callback: (position: CameraPosition) => void): () => void {
-    return this._engine.cameraService.onMoveEnd(callback)
+    return this._cameraService.onMoveEnd(callback)
   }
 
   /**
@@ -133,6 +133,6 @@ export class CameraApi {
    * @returns 取消订阅函数
    */
   onViewChanged(callback: (position: CameraPosition) => void): () => void {
-    return this._engine.cameraService.onViewChanged(callback)
+    return this._cameraService.onViewChanged(callback)
   }
 }

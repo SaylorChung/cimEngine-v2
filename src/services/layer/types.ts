@@ -1,4 +1,4 @@
-import { Service } from '../../core/types'
+import type { IService } from '../../core/types'
 import Cesium from '../../cesiumLoader'
 /**
  * 图层类型枚举
@@ -116,7 +116,7 @@ export interface Layer {
 /**
  * 图层服务接口
  */
-export interface ILayerService extends Service {
+export interface ILayerService extends IService {
   /**
    * 添加图层
    * @param options 图层选项

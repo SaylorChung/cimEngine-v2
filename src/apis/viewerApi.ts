@@ -1,22 +1,22 @@
-import { Engine } from '../core/engine'
-import { ViewerOptions } from '../services/viewer/types'
+import { injectable, inject } from 'tsyringe'
+import type { ViewerOptions, IViewerService } from '../services/viewer/types'
 import Cesium from '../cesiumLoader'
 
 /**
  * 查看器API
  */
+@injectable()
 export class ViewerApi {
-  private _engine: Engine
-
-  constructor(engine: Engine) {
-    this._engine = engine
+  private _viewerService: IViewerService
+  constructor(@inject('ViewService') viewerService: IViewerService) {
+    this._viewerService = viewerService
   }
 
   /**
    * 获取查看器实例
    */
   get viewer(): Cesium.Viewer {
-    return this._engine.viewerService.viewer
+    return this._viewerService.viewer
   }
 
   /**
@@ -26,14 +26,14 @@ export class ViewerApi {
    * @returns Cesium Viewer实例
    */
   createViewer(container: string | HTMLElement, options?: ViewerOptions): Cesium.Viewer {
-    return this._engine.viewerService.createViewer(container, options)
+    return this._viewerService.createViewer(container, options)
   }
 
   /**
    * 销毁查看器
    */
   destroy(): void {
-    this._engine.viewerService.destroyViewer()
+    this._viewerService.destroyViewer()
   }
 
   /**
@@ -42,9 +42,9 @@ export class ViewerApi {
    */
   setOptions(options: ViewerOptions): void {
     // 暂时实现，需要在ViewerService中添加对应方法
-    if (this._engine.viewerService.viewer) {
+    if (this._viewerService.viewer) {
       // 应用选项
-      const viewer = this._engine.viewerService.viewer
+      const viewer = this._viewerService.viewer
       // 可以在此处实现选项设置逻辑
     }
   }
@@ -53,42 +53,42 @@ export class ViewerApi {
    * 获取查看器容器元素
    */
   getContainer(): HTMLElement {
-    return this._engine.viewerService.getContainer()!
+    return this._viewerService.getContainer()!
   }
 
   /**
    * 获取查看器画布元素
    */
   getCanvas(): HTMLCanvasElement {
-    return this._engine.viewerService.viewer.canvas
+    return this._viewerService.viewer.canvas
   }
 
   /**
    * 调整查看器大小
    */
   resize(): void {
-    this._engine.viewerService.resize()
+    this._viewerService.resize()
   }
 
   /**
    * 切换到2D模式
    */
   switchTo2D(): void {
-    this._engine.viewerService.switchTo2D()
+    this._viewerService.switchTo2D()
   }
 
   /**
    * 切换到3D模式
    */
   switchTo3D(): void {
-    this._engine.viewerService.switchTo3D()
+    this._viewerService.switchTo3D()
   }
 
   /**
    * 切换到哥伦布视图
    */
   switchToColumbus(): void {
-    this._engine.viewerService.switchToColumbus()
+    this._viewerService.switchToColumbus()
   }
 
   /**
@@ -96,7 +96,7 @@ export class ViewerApi {
    * @param visible 是否可见
    */
   showTimeline(visible: boolean): void {
-    this._engine.viewerService.showTimeline(visible)
+    this._viewerService.showTimeline(visible)
   }
 
   /**
@@ -104,7 +104,7 @@ export class ViewerApi {
    * @param visible 是否可见
    */
   showAnimation(visible: boolean): void {
-    this._engine.viewerService.showAnimation(visible)
+    this._viewerService.showAnimation(visible)
   }
 
   /**
@@ -112,7 +112,7 @@ export class ViewerApi {
    * @param visible 是否可见
    */
   setTimelineVisibility(visible: boolean): void {
-    this._engine.viewerService.setTimelineVisibility(visible)
+    this._viewerService.setTimelineVisibility(visible)
   }
 
   /**
@@ -120,7 +120,7 @@ export class ViewerApi {
    * @param visible 是否可见
    */
   setAnimationVisibility(visible: boolean): void {
-    this._engine.viewerService.setAnimationVisibility(visible)
+    this._viewerService.setAnimationVisibility(visible)
   }
 
   /**
@@ -128,6 +128,6 @@ export class ViewerApi {
    * @param mode 性能模式：high(高质量)、medium(平衡)、low(高性能)
    */
   setPerformanceMode(mode: 'high' | 'medium' | 'low'): void {
-    this._engine.viewerService.setPerformanceMode(mode)
+    this._viewerService.setPerformanceMode(mode)
   }
 }

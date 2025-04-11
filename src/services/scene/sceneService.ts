@@ -3,12 +3,14 @@
  * 负责管理Cesium场景和环境设置
  */
 import Cesium from '../../cesiumLoader'
-import { IEventBus } from '../../core/types'
+import type { IEventBus } from '../../core/types'
 import { AtmosphereOptions, ISceneService, SceneOptions, SkyBoxOptions } from './types'
+import { injectable, inject } from 'tsyringe'
 
 /**
  * Scene服务实现
  */
+@injectable()
 export class SceneService implements ISceneService {
   private _scene: Cesium.Scene | null = null
   private _events: IEventBus
@@ -19,7 +21,7 @@ export class SceneService implements ISceneService {
    * 构造函数
    * @param events 事件总线
    */
-  constructor(events: IEventBus) {
+  constructor(@inject('EventBus') events: IEventBus) {
     this._events = events
   }
 

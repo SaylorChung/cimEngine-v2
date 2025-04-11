@@ -2,81 +2,81 @@
   "compilerOptions": {
     // 指定ECMAScript目标版本，ES2020支持现代JavaScript特性
     "target": "ES2020",
-    
+
     // 使用定义语法来声明类字段，而不是在构造函数中赋值
     "useDefineForClassFields": true,
-    
+
     // 指定生成的模块代码，ESNext表示使用最新的ECMAScript模块语法
     "module": "ESNext",
-    
+
     // 指定编译过程中需要包含的库文件
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    
+
     // 跳过对声明文件(.d.ts)的类型检查，提高编译速度
     "skipLibCheck": true,
-    
+
     /* Bundler mode - 打包工具模式 */
     // 指定模块解析策略，bundler适用于使用Vite/Webpack等打包工具
     "moduleResolution": "bundler",
-    
+
     // 允许在导入语句中使用.ts扩展名
     "allowImportingTsExtensions": true,
-    
+
     // 允许导入JSON模块并生成对应的类型
     "resolveJsonModule": true,
-    
+
     // 确保每个文件都可以安全地进行单独编译
     "isolatedModules": true,
-    
+
     // 不生成输出文件，只做类型检查（由Vite负责构建）
     "noEmit": true,
 
     /* Type Checking - 类型检查选项 */
     // 启用所有严格类型检查选项
     "strict": true,
-    
+
     // 报告未使用的局部变量错误
     "noUnusedLocals": true,
-    
+
     // 报告未使用的函数参数错误
     "noUnusedParameters": true,
-    
+
     // 防止switch语句中的case落空（没有break或return）
     "noFallthroughCasesInSwitch": true,
 
     /* Path aliases - 路径别名 */
     // 设置基础路径，用于解析非相对模块名
     "baseUrl": ".",
-    
+
     // 路径映射，简化导入路径
     "paths": {
       "@/*": ["src/*"],
-      "cesium": [
-        "libs/cesium/Source/Cesium.js",
-        "libs/cesium/Source/Cesium.d.ts"
-      ],
-      "artis":["dist/artis.d.ts"]
+      "cesium": ["libs/cesium/Source/Cesium.js", "libs/cesium/Source/Cesium.d.ts"],
+      "artis": ["dist/artis.d.ts"]
     },
-    
+
     /* Declaration files - 声明文件生成 */
     // 生成对应的.d.ts声明文件
     "declaration": true,
-    
+
     // 声明文件输出目录
     "declarationDir": "dist",
-    
+
     /* Source Map */
     // 生成源映射文件，便于调试
     "sourceMap": true,
-    
+
     /* Advanced - 高级选项 */
     // 允许使用import默认导入CommonJS模块
-    "esModuleInterop": true
+    "esModuleInterop": true,
+
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
-  
+
   // 指定要包含的文件模式
   "include": ["src/**/*.ts"],
-  
+
   // 指定要排除的文件模式
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }

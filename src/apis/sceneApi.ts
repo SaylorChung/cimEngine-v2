@@ -1,22 +1,22 @@
-import { Engine } from '../core/engine'
-import { SceneMode } from '../services/scene/types'
+import { injectable, inject } from 'tsyringe'
+import type { ISceneService, SceneMode } from '../services/scene/types'
 import Cesium from '../cesiumLoader'
 
 /**
  * 场景API
  */
+@injectable()
 export class SceneApi {
-  private _engine: Engine
-
-  constructor(engine: Engine) {
-    this._engine = engine
+  private _sceneService: ISceneService
+  constructor(@inject('SceneService') sceneService: ISceneService) {
+    this._sceneService = sceneService
   }
 
   /**
    * 获取场景实例
    */
   get scene(): Cesium.Scene {
-    return this._engine.sceneService.scene
+    return this._sceneService.scene
   }
 
   /**
@@ -25,14 +25,14 @@ export class SceneApi {
    * @returns Promise，表示模式变化完成
    */
   async setMode(mode: SceneMode): Promise<void> {
-    return this._engine.sceneService.setSceneMode(mode)
+    return this._sceneService.setSceneMode(mode)
   }
 
   /**
    * 获取当前场景模式
    */
   getMode(): SceneMode {
-    return this._engine.sceneService.getSceneMode()
+    return this._sceneService.getSceneMode()
   }
 
   /**
@@ -40,7 +40,7 @@ export class SceneApi {
    * @param scale 夸张系数
    */
   setTerrainExaggeration(scale: number): void {
-    this._engine.sceneService.setTerrainExaggeration(scale)
+    this._sceneService.setTerrainExaggeration(scale)
   }
 
   /**
@@ -48,7 +48,7 @@ export class SceneApi {
    * @param enabled 是否启用
    */
   enableSunLighting(enabled: boolean): void {
-    this._engine.sceneService.enableSunLighting(enabled)
+    this._sceneService.enableSunLighting(enabled)
   }
 
   /**
@@ -56,7 +56,7 @@ export class SceneApi {
    * @param enabled 是否启用
    */
   enableAtmosphere(enabled: boolean): void {
-    this._engine.sceneService.enableAtmosphere(enabled)
+    this._sceneService.enableAtmosphere(enabled)
   }
 
   /**
@@ -64,7 +64,7 @@ export class SceneApi {
    * @param color 背景色
    */
   setBackgroundColor(color: Cesium.Color): void {
-    this._engine.sceneService.setBackgroundColor(color)
+    this._sceneService.setBackgroundColor(color)
   }
 
   /**
@@ -72,7 +72,7 @@ export class SceneApi {
    * @param enabled 是否启用
    */
   enableFog(enabled: boolean): void {
-    this._engine.sceneService.setFog(enabled)
+    this._sceneService.setFog(enabled)
   }
 
   /**
@@ -80,7 +80,7 @@ export class SceneApi {
    * @returns 图像数据URL的Promise
    */
   async captureScreenshot(): Promise<string> {
-    return this._engine.sceneService.captureScreenshot()
+    return this._sceneService.captureScreenshot()
   }
 
   /**
@@ -88,6 +88,6 @@ export class SceneApi {
    * @param mode 性能模式：high(高质量)、medium(平衡)、low(高性能)
    */
   setPerformanceMode(mode: 'high' | 'medium' | 'low'): void {
-    this._engine.sceneService.setPerformanceMode(mode)
+    this._sceneService.setPerformanceMode(mode)
   }
 }

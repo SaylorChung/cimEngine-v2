@@ -1,14 +1,14 @@
-import { Engine } from '../core/engine'
-import { Layer, LayerOptionsUnion, LayerType } from '../services/layer/types'
+import type { ILayerService, Layer, LayerOptionsUnion, LayerType } from '../services/layer/types'
+import { injectable, inject } from 'tsyringe'
 
 /**
  * 图层API
  */
+@injectable()
 export class LayerApi {
-  private _engine: Engine
-
-  constructor(engine: Engine) {
-    this._engine = engine
+  private _layerService: ILayerService
+  constructor(@inject('LayerService') layerService: ILayerService) {
+    this._layerService = layerService
   }
 
   /**
@@ -17,7 +17,7 @@ export class LayerApi {
    * @returns 创建的图层Promise
    */
   async addLayer(options: LayerOptionsUnion): Promise<Layer> {
-    return await this._engine.layerService.addLayer(options)
+    return await this._layerService.addLayer(options)
   }
 
   /**
@@ -26,7 +26,7 @@ export class LayerApi {
    * @returns 是否成功移除
    */
   removeLayer(layerId: string): boolean {
-    return this._engine.layerService.removeLayer(layerId)
+    return this._layerService.removeLayer(layerId)
   }
 
   /**
@@ -35,7 +35,7 @@ export class LayerApi {
    * @returns 图层实例
    */
   getLayer(layerId: string): Layer | undefined {
-    return this._engine.layerService.getLayer(layerId)
+    return this._layerService.getLayer(layerId)
   }
 
   /**
@@ -43,7 +43,7 @@ export class LayerApi {
    * @returns 图层列表
    */
   getLayers(): Layer[] {
-    return this._engine.layerService.getLayers()
+    return this._layerService.getLayers()
   }
 
   /**
@@ -52,7 +52,7 @@ export class LayerApi {
    * @returns 图层列表
    */
   getLayersByGroup(groupName: string): Layer[] {
-    return this._engine.layerService.getLayersByGroup(groupName)
+    return this._layerService.getLayersByGroup(groupName)
   }
 
   /**
@@ -61,7 +61,7 @@ export class LayerApi {
    * @returns 图层列表
    */
   getLayersByType(type: LayerType): Layer[] {
-    return this._engine.layerService.getLayersByType(type)
+    return this._layerService.getLayersByType(type)
   }
 
   /**
@@ -69,7 +69,7 @@ export class LayerApi {
    * @param layerId 图层ID
    */
   showLayer(layerId: string): void {
-    this._engine.layerService.showLayer(layerId)
+    this._layerService.showLayer(layerId)
   }
 
   /**
@@ -77,7 +77,7 @@ export class LayerApi {
    * @param layerId 图层ID
    */
   hideLayer(layerId: string): void {
-    this._engine.layerService.hideLayer(layerId)
+    this._layerService.hideLayer(layerId)
   }
 
   /**
@@ -86,7 +86,7 @@ export class LayerApi {
    * @param opacity 不透明度(0-1)
    */
   setLayerOpacity(layerId: string, opacity: number): void {
-    this._engine.layerService.setLayerOpacity(layerId, opacity)
+    this._layerService.setLayerOpacity(layerId, opacity)
   }
 
   /**
@@ -95,7 +95,7 @@ export class LayerApi {
    * @param zIndex 图层顺序值
    */
   setLayerZIndex(layerId: string, zIndex: number): void {
-    this._engine.layerService.setLayerZIndex(layerId, zIndex)
+    this._layerService.setLayerZIndex(layerId, zIndex)
   }
 
   /**
@@ -103,7 +103,7 @@ export class LayerApi {
    * @param groupName 组名
    */
   showLayerGroup(groupName: string): void {
-    this._engine.layerService.showLayerGroup(groupName)
+    this._layerService.showLayerGroup(groupName)
   }
 
   /**
@@ -111,13 +111,13 @@ export class LayerApi {
    * @param groupName 组名
    */
   hideLayerGroup(groupName: string): void {
-    this._engine.layerService.hideLayerGroup(groupName)
+    this._layerService.hideLayerGroup(groupName)
   }
 
   /**
    * 清除所有图层
    */
   clearLayers(): void {
-    this._engine.layerService.clearLayers()
+    this._layerService.clearLayers()
   }
 }

@@ -1,26 +1,20 @@
-import { Engine } from '../core/engine'
 import { CameraApi } from './cameraApi'
 import { SceneApi } from './sceneApi'
 import { LayerApi } from './layerApi'
 import { ViewerApi } from './viewerApi'
+import { injectable, inject } from 'tsyringe'
 
 /**
  * API管理器，提供对所有API模块的访问
  */
+@injectable()
 export class ApiManager {
-  // API模块实例
-  public camera: CameraApi
-  public scene: SceneApi
-  public layer: LayerApi
-  public viewer: ViewerApi
-
-  constructor(engine: Engine) {
-    // 初始化API模块
-    this.camera = new CameraApi(engine)
-    this.scene = new SceneApi(engine)
-    this.layer = new LayerApi(engine)
-    this.viewer = new ViewerApi(engine)
-  }
+  constructor(
+    @inject('CameraApi') public readonly camera: CameraApi,
+    @inject('SceneApi') public readonly scene: SceneApi,
+    @inject('LayerApi') public readonly layer: LayerApi,
+    @inject('ViewerApi') public readonly viewer: ViewerApi
+  ) {}
 
   /**
    * 初始化所有API

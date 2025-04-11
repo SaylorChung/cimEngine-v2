@@ -1,86 +1,144 @@
 /**
  * Artis 核心类型定义
  */
-
-// 引擎配置选项
+import { ApiManager } from './apiManager'
+/**
+ * 引擎配置选项
+ */
 export interface EngineOptions {
-  container: string | HTMLElement // Cesium容器
+  /**
+   * 容器元素或ID
+   */
+  container: string | HTMLElement
+
+  /**
+   * 全局选项
+   */
   options?: {
-    performance?: 'high' | 'medium' | 'low' // 性能模式
-    debug?: boolean // 调试模式
-    autoStart?: boolean // 自动启动
+    /**
+     * 性能模式
+     */
+    performance?: 'high' | 'medium' | 'low'
+
+    /**
+     * 调试模式
+     */
+    debug?: boolean
+
+    /**
+     * 是否自动初始化
+     */
+    autoStart?: boolean
   }
-  plugins?: Plugin[] // 插件列表
-  services?: Record<string, any> // 服务配置
+
+  /**
+   * 插件列表
+   */
+  plugins?: IPlugin[]
 }
 
-// 插件接口
-export interface Plugin {
-  name: string // 插件名称
-  install: (engine: Engine, options?: any) => void // 安装方法
-  uninstall?: (engine: Engine) => void // 卸载方法
+/**
+ * 插件接口
+ */
+export interface IPlugin {
+  /**
+   * 插件名称
+   */
+  name: string
+
+  /**
+   * 安装方法
+   */
+  install: (engine: IEngine, options?: any) => void
+
+  /**
+   * 可选的卸载方法
+   */
+  uninstall?: (engine: IEngine) => void
 }
 
-// Engine类型前向声明
-export class Engine {
-  // 这里只是为了类型引用，实际实现在engine.ts
-  container: IContainer
-  events: IEventBus
-  plugins: IPluginManager
-
-  constructor() {
-    // 这些属性将在init方法中被初始化
-    this.container = {} as IContainer
-    this.events = {} as IEventBus
-    this.plugins = {} as IPluginManager
-  }
-}
-
-// 服务接口
-export interface Service {
-  init?(): void | Promise<void> // 初始化方法
-  dispose?(): void // 销毁方法
-}
-
-// 服务构造函数类型
-export type ServiceConstructor<T extends Service = Service> = new (...args: any[]) => T
-
-// 服务标识符类型
-export type ServiceIdentifier<T extends Service = Service> = string | symbol | ServiceConstructor<T>
-
-// 服务依赖类型 - 可以是服务标识符或具体值
-export type ServiceDependency = ServiceIdentifier<any> | any
-
-// 依赖注入容器接口
-export interface IContainer extends Service {
-  register<T extends Service>(
-    id: ServiceIdentifier<T>,
-    implementation: ServiceConstructor<T>,
-    dependenciesOrSingleton?: ServiceDependency[] | boolean
-  ): void
-  registerInstance<T extends Service>(id: ServiceIdentifier<T>, instance: T): void
-  resolve<T extends Service>(id: ServiceIdentifier<T>): T
-  has<T extends Service>(id: ServiceIdentifier<T>): boolean
-}
-
-// 事件处理函数
+/**
+ * 事件处理函数类型
+ */
 export type EventHandler<T = any> = (data: T) => void
-// 事件总线接口
-export interface IEventBus extends Service {
+
+/**
+ * 事件总线接口
+ */
+export interface IEventBus {
+  /**
+   * 注册事件监听器
+   * @param eventName 事件名称
+   * @param handler 处理函数
+   * @returns 取消订阅的函数
+   */
   on<T = any>(eventName: string, handler: EventHandler<T>): () => void
+
+  /**
+   * 注册一次性事件监听器
+   * @param eventName 事件名称
+   * @param handler 处理函数
+   */
   once<T = any>(eventName: string, handler: EventHandler<T>): void
+
+  /**
+   * 触发事件
+   * @param eventName 事件名称
+   * @param data 事件数据
+   */
   emit<T = any>(eventName: string, data?: T): void
+
+  /**
+   * 移除事件监听器
+   * @param eventName 事件名称
+   * @param handler 可选的特定处理函数，若不提供则移除所有监听器
+   */
   off<T = any>(eventName: string, handler?: EventHandler<T>): void
+
+  /**
+   * 清除所有事件监听器
+   */
   clear(): void
-  handlers: Map<string, Set<EventHandler>>
-  onceHandlers: Map<string, Set<EventHandler>>
 }
 
-// 插件管理器接口
-export interface IPluginManager extends Service {
-  use(plugin: Plugin, options?: any): void
-  remove(name: string): void
-  has(name: string): boolean
-  get(name: string): Plugin | undefined
-  plugins: Map<string, Plugin>
+/**
+ * 基础服务接口
+ * 所有服务的基础接口
+ */
+export interface IService {
+  /**
+   * 初始化服务
+   */
+  init?(): void | Promise<void>
+
+  /**
+   * 销毁服务
+   */
+  dispose?(): void | Promise<void>
+}
+
+/**
+ * 引擎接口
+ * 定义引擎的公共API
+ */
+export interface IEngine {
+  /**
+   * 事件总线
+   */
+  readonly events: IEventBus
+
+  /**
+   * API管理器
+   */
+  readonly api: ApiManager
+
+  /**
+   * 初始化引擎
+   */
+  init(): Promise<void>
+
+  /**
+   * 销毁引擎
+   */
+  dispose(): Promise<void>
 }

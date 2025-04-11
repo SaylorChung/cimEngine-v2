@@ -1,9 +1,8 @@
-import { Service } from 'artis'
-
+import type { IService } from '../../core/types'
 /**
  * 地形服务接口
  */
-export interface ITerrainService extends Service {
+export interface ITerrainService extends IService {
   /**
    * 加载地形
    * @param options 地形选项
