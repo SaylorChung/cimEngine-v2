@@ -20,16 +20,6 @@ export class ViewerApi {
   }
 
   /**
-   * 创建查看器
-   * @param container 容器元素或ID
-   * @param options 查看器选项
-   * @returns Cesium Viewer实例
-   */
-  createViewer(container: string | HTMLElement, options?: ViewerOptions): Cesium.Viewer {
-    return this._viewerService.createViewer(container, options)
-  }
-
-  /**
    * 销毁查看器
    */
   destroy(): void {
@@ -38,23 +28,9 @@ export class ViewerApi {
 
   /**
    * 设置查看器选项
-   * @param options 查看器选项
+   * @param _options 查看器选项
    */
-  setOptions(options: ViewerOptions): void {
-    // 暂时实现，需要在ViewerService中添加对应方法
-    if (this._viewerService.viewer) {
-      // 应用选项
-      const viewer = this._viewerService.viewer
-      // 可以在此处实现选项设置逻辑
-    }
-  }
-
-  /**
-   * 获取查看器容器元素
-   */
-  getContainer(): HTMLElement {
-    return this._viewerService.getContainer()!
-  }
+  setOptions(_options: ViewerOptions): void {}
 
   /**
    * 获取查看器画布元素

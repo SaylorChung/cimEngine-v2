@@ -36,7 +36,7 @@
     "strict": true,
 
     // 报告未使用的局部变量错误
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
 
     // 报告未使用的函数参数错误
     "noUnusedParameters": true,

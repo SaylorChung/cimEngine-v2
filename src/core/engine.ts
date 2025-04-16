@@ -44,6 +44,11 @@ export class Engine implements IEngine {
   public readonly api: ApiManager
 
   /**
+   * 引擎选项
+   */
+  private _options: EngineOptions
+
+  /**
    * 依赖注入容器
    */
   private _container: DependencyContainer
@@ -58,24 +63,23 @@ export class Engine implements IEngine {
    * @param options 引擎选项
    */
   constructor(options: Partial<EngineOptions> = {}) {
+    window.CESIUM_BASE_URL = '/'
+    // 保存选项
+    this._options = options as EngineOptions
     // 创建子容器，确保每个引擎实例有独立的服务集合
     this._container = container.createChildContainer()
-
     // 创建事件总线 - 作为基础组件直接实例化
     // 事件总线是所有服务的基础依赖，需要在容器初始化前可用
     this.events = new EventBus()
-
     // 然后将其注册到容器中供其他服务使用
     this._container.registerInstance('EventBus', this.events)
-
+    this._container.registerInstance('EngineOptions', this._options)
     // 注册服务
     this._registerServices()
-
     // 创建API管理器
-    this.api = this._container.resolve<ApiManager>('ApiManager')
-
+    this.api = this.apiManager
     // 应用用户选项
-    this._applyOptions(options as EngineOptions)
+    this._applyOptions(this._options)
   }
 
   /**
@@ -88,15 +92,19 @@ export class Engine implements IEngine {
     }
 
     try {
-      // 初始化视图服务 (首先初始化)
+      // 初始化视图服务
       if (typeof this.viewerService.init === 'function') {
         await this.viewerService.init()
       }
 
+      // 确保视图服务完全初始化后再创建其他服务
       // 初始化场景服务
       if (typeof this.sceneService.init === 'function') {
         await this.sceneService.init()
       }
+
+      // 在ViewerService初始化后再创建API管理器
+      // this.api = this.apiManager
 
       // 初始化其他服务
       const services = [
@@ -114,9 +122,6 @@ export class Engine implements IEngine {
           await service.init()
         }
       }
-
-      // 初始化API
-      this.api.init()
       this._initialized = true
       this.events.emit('engine.initialized')
     } catch (error) {
@@ -169,12 +174,6 @@ export class Engine implements IEngine {
    * @private
    */
   private _registerServices(): void {
-    // 注册引擎实例
-    this._container.registerInstance('Engine', this)
-
-    // 注册事件总线
-    this._container.registerInstance('EventBus', this.events)
-
     // 注册所有服务为单例，但只在这个引擎实例的容器中是单例
     this._container.registerSingleton<IViewerService>('ViewerService', ViewerService)
     this._container.registerSingleton<ISceneService>('SceneService', SceneService)
@@ -230,6 +229,13 @@ export class Engine implements IEngine {
         setTimeout(() => this.init(), 0)
       }
     }
+  }
+
+  /**
+   * 获取 api 管理器
+   */
+  public get apiManager() {
+    return this._container.resolve<ApiManager>('ApiManager')
   }
 
   /**

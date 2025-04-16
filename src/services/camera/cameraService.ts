@@ -50,7 +50,6 @@ export class CameraService implements ICameraService {
   ) {
     this._viewerService = viewerService
     this._events = events
-
     // 初始化
     this._initialize()
   }

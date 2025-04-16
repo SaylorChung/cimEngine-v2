@@ -1,4 +1,4 @@
-import type { IEventBus } from 'artis'
+import type { IEventBus } from '../../artis'
 import { IWidgetService, WidgetOptions } from './types'
 import { injectable, inject } from 'tsyringe'
 import type { IViewerService } from '../viewer/types'
@@ -24,10 +24,6 @@ export class WidgetService implements IWidgetService {
   ) {
     this._viewerService = viewerService
     this._events = events
-  }
-
-  public get container(): HTMLElement {
-    return this._viewerService.getContainer() || document.body
   }
 
   /**

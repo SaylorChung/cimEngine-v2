@@ -29,20 +29,5 @@ export class ImageryLayer extends BaseLayer {
     this.instance.alpha = this._opacity
   }
 
-  destroy(): void {
-    if (this.instance && this.instance.imageryProvider) {
-      // 检查是否有 destroy 方法（使用类型安全的方式）
-      const provider = this.instance.imageryProvider
-      if (provider && typeof (provider as any).destroy === 'function') {
-        ;(provider as any).destroy()
-      }
-      // 如果图层已添加到场景中，需要从场景中移除
-      if (this._layerCollection) {
-        this._layerCollection.remove(this.instance)
-      }
-    }
-
-    super.destroy() // 调用父类的销毁方法
-    this._events.emit('layer.destroyed', { id: this.id })
-  }
+  destroy(): void {}
 }

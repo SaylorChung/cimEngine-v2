@@ -4,7 +4,6 @@
 import 'reflect-metadata'
 import { Engine } from './core/engine'
 import { IEngine } from './core/types' // 显式导入接口
-import { PluginManager } from './core/pluginManager'
 import * as CesiumModule from './cesiumLoader'
 
 // 定义版本号常量
@@ -15,7 +14,6 @@ const VERSION = '2.0.1'
  */
 interface IArtis {
   Engine: typeof Engine // 名称统一为 Engine
-  PluginManager: typeof PluginManager
   VERSION: string
   Cesium: typeof CesiumModule
 }
@@ -23,7 +21,6 @@ interface IArtis {
 // 创建导出对象
 const artis: IArtis = {
   Engine, // 使用简写语法
-  PluginManager,
   VERSION: '2.0.1',
   Cesium: CesiumModule,
 }
@@ -32,7 +29,7 @@ const artis: IArtis = {
 export default artis
 
 // 命名导出主要组件
-export { Engine, PluginManager, VERSION }
+export { Engine, VERSION }
 export type { IEngine } // 显式导出接口
 
 // 导出类型定义

@@ -1,7 +1,18 @@
 /**
  * Artis 核心类型定义
  */
+import type { ViewerOptions } from '@/services/viewer/types'
 import { ApiManager } from './apiManager'
+
+/**
+ * 全局 window 挂载
+ */
+declare global {
+  interface Window {
+    CESIUM_BASE_URL?: string
+  }
+}
+
 /**
  * 引擎配置选项
  */
@@ -10,6 +21,11 @@ export interface EngineOptions {
    * 容器元素或ID
    */
   container: string | HTMLElement
+
+  /**
+   * Viewer选项（新增配置项）
+   */
+  viewerOptions?: ViewerOptions
 
   /**
    * 全局选项
@@ -30,31 +46,6 @@ export interface EngineOptions {
      */
     autoStart?: boolean
   }
-
-  /**
-   * 插件列表
-   */
-  plugins?: IPlugin[]
-}
-
-/**
- * 插件接口
- */
-export interface IPlugin {
-  /**
-   * 插件名称
-   */
-  name: string
-
-  /**
-   * 安装方法
-   */
-  install: (engine: IEngine, options?: any) => void
-
-  /**
-   * 可选的卸载方法
-   */
-  uninstall?: (engine: IEngine) => void
 }
 
 /**

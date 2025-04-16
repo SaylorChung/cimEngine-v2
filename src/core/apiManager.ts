@@ -1,5 +1,4 @@
 import { injectable, inject } from 'tsyringe'
-import type { IEventBus } from './types'
 import type { ICameraService } from '../services/camera/types'
 import type { ISceneService } from '../services/scene/types'
 import type { ITerrainService } from '../services/terrain/types'
@@ -50,21 +49,12 @@ export class ApiManager {
     @inject('SceneService') sceneService: ISceneService,
     @inject('TerrainService') terrainService: ITerrainService,
     @inject('LayerService') layerService: ILayerService,
-    @inject('ViewerService') viewerService: IViewerService,
-    @inject('EventBus') events: IEventBus
+    @inject('ViewerService') viewerService: IViewerService
   ) {
     this.camera = new CameraApi(cameraService)
     this.scene = new SceneApi(sceneService)
     this.terrain = new TerrainApi(terrainService)
     this.layer = new LayerApi(layerService)
     this.viewer = new ViewerApi(viewerService)
-  }
-
-  /**
-   * 初始化所有API
-   * @internal 内部使用，由引擎自动调用
-   */
-  init(): void {
-    // 如果API有需要初始化的逻辑，在这里执行
   }
 }

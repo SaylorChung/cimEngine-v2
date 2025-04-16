@@ -4,7 +4,7 @@
  */
 import { injectable, inject } from 'tsyringe'
 import type { IViewerService, ViewerOptions } from './types'
-import type { IEventBus } from '../../core/types'
+import type { EngineOptions, IEventBus } from '../../core/types'
 import Cesium from '../../cesiumLoader'
 
 /**
@@ -12,17 +12,24 @@ import Cesium from '../../cesiumLoader'
  */
 @injectable()
 export class ViewerService implements IViewerService {
-  private _container: HTMLElement | null = null
-  private _events: IEventBus // 使用接口类型
+  private _container!: HTMLElement | string
+  private _events: IEventBus
   private _viewer: Cesium.Viewer | null = null
+  private _engineOptions: EngineOptions
 
   /**
    * 构造函数
    * @param events 事件总线
    */
-  constructor(@inject('EventBus') events: IEventBus) {
-    // 注入接口类型
+  constructor(
+    @inject('EventBus') events: IEventBus,
+    @inject('EngineOptions') engineOptions: EngineOptions
+  ) {
     this._events = events
+    this._engineOptions = engineOptions || {}
+    if (!this._engineOptions.container) {
+      this._container = this._engineOptions.container
+    }
   }
 
   /**
@@ -105,14 +112,6 @@ export class ViewerService implements IViewerService {
 
     // 发布事件
     this._events.emit('viewer.destroyed')
-  }
-
-  /**
-   * 获取容器元素
-   * @returns 容器元素
-   */
-  public getContainer(): HTMLElement | null {
-    return this._container
   }
 
   /**
@@ -241,8 +240,38 @@ export class ViewerService implements IViewerService {
    * 服务初始化
    */
   public init(): void {
-    // 初始化逻辑
-    this._events.emit('viewer.service.initialized')
+    // 检查容器
+    if (!this._container && this._engineOptions.container) {
+      if (typeof this._engineOptions.container === 'string') {
+        const element = document.getElementById(this._engineOptions.container)
+        if (element) {
+          this._container = element
+        }
+      } else {
+        this._container = this._engineOptions.container
+      }
+    }
+
+    // 如果没有容器，尝试查找备选容器
+    if (!this._container) {
+      const mapContainer = document.querySelector('.map-container')
+      if (mapContainer instanceof HTMLElement) {
+        this._container = mapContainer
+      } else {
+        throw new Error('无法找到容器元素，Viewer无法创建')
+      }
+    }
+
+    // 获取Viewer选项
+    const viewerOptions = this._engineOptions.viewerOptions || {}
+
+    // 创建Viewer
+    this.createViewer(this._container, viewerOptions)
+
+    // 应用性能模式
+    if (this._engineOptions.options?.performance) {
+      this.setPerformanceMode(this._engineOptions.options.performance)
+    }
   }
 
   /**
